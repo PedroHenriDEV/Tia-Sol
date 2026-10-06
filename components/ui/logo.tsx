@@ -1,28 +1,4 @@
-import Image from 'next/image';
-import Link from 'next/link';
-
-type LogoVariant = 'sidebar' | 'login' | 'header' | 'mobile';
-
-const sizes: Record<LogoVariant, { image: string; title: string; subtitle: string }> = {
-  sidebar: { image: 'h-[58px] w-[88px]', title: 'text-[18px]', subtitle: 'text-[9px]' },
-  login: { image: 'h-[84px] w-[126px]', title: 'text-2xl', subtitle: 'text-[10px]' },
-  header: { image: 'h-10 w-[60px]', title: 'text-sm', subtitle: 'text-[9px]' },
-  mobile: { image: 'h-10 w-[60px]', title: 'text-sm', subtitle: 'hidden' },
-};
-
-export function Logo({ variant='sidebar', linked=true }: { variant?: LogoVariant; linked?: boolean }) {
-  const s = sizes[variant];
-  const content = (
-    <>
-      <Image src="/Logo.jpg" alt="Logo Tia Sol Recreação" width={1536} height={1024}
-        priority={variant === 'login' || variant === 'sidebar'}
-        className={`${s.image} shrink-0 object-contain`} />
-      <span className="min-w-0">
-        <span className={`block font-bold leading-tight tracking-[.02em] text-[var(--foreground)] ${s.title}`}>TIA SOL</span>
-        <span className={`mt-1 block leading-tight text-[var(--muted)] ${s.subtitle}`}>Recreação &amp; Eventos</span>
-      </span>
-    </>
-  );
-  const node = <span className="inline-flex min-w-0 items-center gap-2.5">{content}</span>;
-  return linked ? <Link href="/dashboard" aria-label="Tia Sol — início">{node}</Link> : node;
-}
+import Image from 'next/image'; import Link from 'next/link';
+type LogoVariant='sidebar'|'login'|'header'|'mobile';
+const sizes:Record<LogoVariant,{image:string;title:string;subtitle:string}>={sidebar:{image:'h-[58px] w-[88px]',title:'text-[18px]',subtitle:'text-[9px]'},login:{image:'h-[84px] w-[126px]',title:'text-2xl',subtitle:'text-[10px]'},header:{image:'h-10 w-[60px]',title:'text-sm',subtitle:'text-[9px]'},mobile:{image:'h-10 w-[60px]',title:'text-sm',subtitle:'hidden'}};
+export function Logo({variant='sidebar',linked=true}:{variant?:LogoVariant;linked?:boolean}){const s=sizes[variant];const content=<><Image src="/Logo.jpg" alt="Logo Tia Sol Recreação" width={1536} height={1024} priority={variant==='login'||variant==='sidebar'} className={`${s.image} shrink-0 object-contain`}/><span className="min-w-0"><span className={`block font-bold leading-tight tracking-[.02em] text-[var(--foreground)] ${s.title}`}>TIA SOL</span><span className={`mt-1 block leading-tight text-[var(--muted)] ${s.subtitle}`}>Recreação &amp; Eventos</span></span></>;const node=<span className="inline-flex min-w-0 items-center gap-2.5">{content}</span>;return linked?<Link href="/dashboard" aria-label="Tia Sol — início">{node}</Link>:node}
