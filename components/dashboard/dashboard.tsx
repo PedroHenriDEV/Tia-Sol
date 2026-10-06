@@ -1,80 +1,36 @@
-import { CalendarDays, CalendarRange, Clock3, Wallet, Package } from 'lucide-react';
+import { CalendarDays, CalendarRange, Clock3, Wallet, Package, ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
 import { EmptyState } from '@/components/ui/empty-state';
 
-const overview = [
-  { label: 'Eventos próximos', icon: CalendarRange },
-  { label: 'Valores a receber', icon: Wallet },
-  { label: 'Pacotes ativos', icon: Package },
-] as const;
-
 export function Dashboard() {
-  return (
-    <div className="space-y-10">
-      <section className="relative overflow-hidden pb-2 pt-2">
-        <span aria-hidden="true" className="absolute right-6 top-0 hidden h-24 w-24 rounded-full border-[10px] border-[var(--accent)]/15 sm:block" />
-        <span aria-hidden="true" className="absolute right-20 top-12 hidden h-7 w-7 rounded-full bg-[var(--secondary)]/15 sm:block" />
-        <p className="section-label">Bem-vinda de volta</p>
-        <h1 className="mt-2 text-[32px] font-semibold leading-tight tracking-[-0.035em] text-[var(--foreground)] sm:text-4xl">
-          Bom dia, Tia Sol
-        </h1>
-        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          Veja o que está acontecendo com seus eventos.
-        </p>
-      </section>
-
-      <section aria-label="Resumo" className="flex flex-wrap items-stretch border-y border-[var(--border)] py-4 sm:py-5">
-        {overview.map(({ label, icon: Icon }, index) => (
-          <div
-            key={label}
-            className={`flex min-w-[50%] flex-1 items-center gap-3 py-2 sm:min-w-0 sm:px-5 sm:first:pl-0 ${
-              index > 0 ? 'sm:border-l sm:border-[var(--border)]' : ''
-            }`}
-          >
-            <Icon size={17} strokeWidth={1.8} className="shrink-0 text-[var(--primary)]" />
-            <div>
-              <p className="text-[11px] leading-4 text-[var(--muted)] sm:text-xs">{label}</p>
-              <p className="mt-1 text-lg font-semibold leading-5 text-[var(--foreground)]">—</p>
-            </div>
-          </div>
-        ))}
-      </section>
-      <p className="-mt-8 text-[11px] text-[var(--muted)]">
-        Os números serão atualizados quando os módulos correspondentes estiverem disponíveis.
-      </p>
-
-      <section className="grid gap-8 lg:grid-cols-[1.4fr_0.8fr] lg:gap-12">
-        <div className="min-w-0">
-          <div className="mb-4 flex items-end justify-between border-b border-[var(--border)] pb-3">
-            <div>
-              <p className="section-label">Na agenda</p>
-              <h2 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Próximos eventos</h2>
-            </div>
-            <CalendarRange size={18} className="mb-1 text-[var(--primary)]" strokeWidth={1.8} />
-          </div>
-          <EmptyState
-            icon={CalendarDays}
-            title="Sua próxima celebração aparecerá aqui"
-            description="O módulo de eventos ainda não está disponível. Nenhum evento de exemplo está sendo exibido."
-          />
+  return <div className="space-y-8">
+    <section className="relative overflow-hidden rounded-[28px] border bg-[var(--card)] p-6 shadow-[var(--shadow-card)] sm:p-8" style={{borderColor:'var(--border)'}}>
+      <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full border-[18px] border-[var(--accent)]/15"/>
+      <div className="absolute right-24 top-10 h-7 w-7 rounded-full bg-[var(--primary)]/10"/>
+      <div className="relative max-w-2xl">
+        <p className="section-label">Bom te ver por aqui</p>
+        <h1 className="display-title mt-2 text-3xl sm:text-4xl">Olá, Tia Sol <span aria-hidden>☀️</span></h1>
+        <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted-foreground)]">Tenha uma visão tranquila do que está acontecendo com suas festas, clientes e próximos compromissos.</p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Link href="/clientes" className="button-primary"><CalendarDays size={17}/> Novo atendimento</Link>
+          <Link href="/pacotes" className="button-secondary">Ver pacotes <ArrowUpRight size={16}/></Link>
         </div>
+      </div>
+    </section>
 
-        <div className="min-w-0">
-          <div className="mb-4 flex items-end justify-between border-b border-[var(--border)] pb-3">
-            <div>
-              <p className="section-label">Hoje</p>
-              <h2 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Agenda de hoje</h2>
-            </div>
-            <Clock3 size={18} className="mb-1 text-[var(--primary)]" strokeWidth={1.8} />
-          </div>
-          <div className="relative ml-2 border-l border-[var(--border)] py-4 pl-6">
-            <span className="absolute -left-[5px] top-5 h-[9px] w-[9px] rounded-full border-2 border-[var(--primary)] bg-[var(--background)]" />
-            <p className="text-sm font-medium text-[var(--foreground)]">Um dia leve por aqui</p>
-            <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-              A agenda ainda não está disponível. Nenhum compromisso fictício está sendo exibido.
-            </p>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    <section className="grid gap-4 sm:grid-cols-3">
+      {[['Eventos próximos',CalendarRange,'Quando o módulo de eventos estiver ativo'],['A receber',Wallet,'Valores dos eventos cadastrados'],['Pacotes ativos',Package,'Seu catálogo de recreação']].map(([label,Icon,description])=><div key={String(label)} className="surface p-5"><div className="flex items-start justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)]"><Icon size={18}/></span><span className="text-xs text-[var(--muted)]">Em breve</span></div><p className="mt-5 text-sm font-bold">{label}</p><p className="mt-1 text-xs leading-5 text-[var(--muted)]">{description}</p></div>)}
+    </section>
+
+    <section className="grid gap-6 lg:grid-cols-[1.35fr_.65fr]">
+      <div className="surface p-5 sm:p-6">
+        <div className="mb-5 flex items-end justify-between"><div><p className="section-label">Na agenda</p><h2 className="display-title mt-1 text-2xl">Próximas festas</h2></div><CalendarRange size={19} className="text-[var(--secondary)]"/></div>
+        <EmptyState icon={CalendarDays} title="Sua próxima celebração aparecerá aqui" description="Assim que os eventos forem cadastrados, eles aparecerão nesta área sem dados fictícios."/>
+      </div>
+      <div className="surface p-5 sm:p-6">
+        <div className="mb-5"><p className="section-label">Hoje</p><h2 className="display-title mt-1 text-2xl">Um dia de cada vez</h2></div>
+        <div className="relative border-l-2 border-[var(--accent)]/30 py-2 pl-5"><span className="absolute -left-[7px] top-3 h-3 w-3 rounded-full border-2 border-[var(--accent)] bg-[var(--card)]"/><p className="text-sm font-bold">Tudo pronto para organizar</p><p className="mt-1 text-xs leading-5 text-[var(--muted)]">A agenda real será preenchida pelos seus eventos.</p></div>
+      </div>
+    </section>
+  </div>;
 }
