@@ -1,65 +1,7 @@
 'use client';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CalendarDays, ChartNoAxesCombined, FileSignature, LayoutDashboard, Package, PartyPopper, Settings, Users, X } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
-
-const groups = [
-  { label: 'DIA A DIA', items: [['/dashboard','Visão geral',LayoutDashboard],['/em-breve/agenda','Agenda',CalendarDays]] },
-  { label: 'FESTAS', items: [['/em-breve/eventos','Eventos',PartyPopper],['/clientes','Clientes',Users],['/pacotes','Pacotes',Package]] },
-  { label: 'ADMINISTRAÇÃO', items: [['/em-breve/financeiro','Financeiro',ChartNoAxesCombined],['/em-breve/contratos','Contratos',FileSignature]] },
-] as const;
-
-export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const path = usePathname();
-
-  return (
-    <>
-      <button type="button" aria-label="Fechar menu" onClick={onClose}
-        className={`fixed inset-0 z-40 bg-[#332b2d]/35 backdrop-blur-[2px] transition-opacity lg:hidden ${open ? 'visible opacity-100' : 'invisible opacity-0'}`} />
-      <aside aria-label="Navegação principal"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(var(--sidebar-width),calc(100vw-1.25rem))] flex-col border-r bg-[#fffdf9] transition-transform duration-300 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ borderColor: 'var(--border)' }}>
-        <div className="flex h-[112px] items-center justify-between px-6">
-          <Logo variant="sidebar" />
-          <button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-xl text-[var(--muted)] hover:bg-[var(--background)] lg:hidden" aria-label="Fechar menu">
-            <X size={19} />
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto px-4 pb-5">
-          {groups.map((group) => (
-            <div key={group.label} className="mb-7">
-              <p className="px-3 pb-2 text-[10px] font-bold tracking-[.17em] text-[#a99b96]">{group.label}</p>
-              <div className="space-y-1">
-                {group.items.map(([href, label, Icon]) => {
-                  const active = path === href || (href !== '/dashboard' && path.startsWith(`${href}/`));
-                  return (
-                    <Link key={href} href={href} onClick={onClose} aria-current={active ? 'page' : undefined}
-                      className={`group relative flex min-h-12 items-center gap-3 rounded-xl px-3.5 text-sm transition duration-200 ${active ? 'bg-[var(--accent-soft)] font-bold text-[var(--foreground)]' : 'text-[var(--muted-foreground)] hover:bg-[#fff7f2] hover:text-[var(--foreground)]'}`}>
-                      {active && <span className="absolute left-0 top-2.5 h-7 w-1 rounded-r-full bg-[var(--accent)]" />}
-                      <span className={`grid h-8 w-8 place-items-center rounded-lg transition ${active ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-[var(--muted)] group-hover:text-[var(--primary)]'}`}>
-                        <Icon size={17} strokeWidth={active ? 2.1 : 1.8} />
-                      </span>
-                      <span>{label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="border-t px-5 py-4" style={{ borderColor: 'var(--border)' }}>
-          <Link href="/configuracoes" onClick={onClose}
-            className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition hover:bg-[var(--background)] ${path === '/configuracoes' ? 'bg-[var(--primary-soft)] text-[var(--primary)]' : 'text-[var(--muted-foreground)]'}`}>
-            <Settings size={18} />
-            <span>Configurações</span>
-          </Link>
-          <p className="mt-3 px-3 text-[10px] leading-4 text-[var(--muted)]">Um espaço feito com carinho para a Tia Sol.</p>
-        </div>
-      </aside>
-    </>
-  );
-}
+const groups=[{label:'DIA A DIA',items:[['/dashboard','Visão geral',LayoutDashboard],['/em-breve/agenda','Agenda',CalendarDays]]},{label:'FESTAS',items:[['/em-breve/eventos','Eventos',PartyPopper],['/clientes','Clientes',Users],['/pacotes','Pacotes',Package]]},{label:'ADMINISTRAÇÃO',items:[['/em-breve/financeiro','Financeiro',ChartNoAxesCombined],['/em-breve/contratos','Contratos',FileSignature]]}] as const;
+export function Sidebar({open,onClose}:{open:boolean;onClose:()=>void}){const path=usePathname();return <><button type="button" aria-label="Fechar menu" onClick={onClose} className={`fixed inset-0 z-40 bg-[#332b2d]/35 backdrop-blur-[2px] transition-opacity lg:hidden ${open?'visible opacity-100':'invisible opacity-0'}`}/><aside aria-label="Navegação principal" className={`fixed inset-y-0 left-0 z-50 flex w-[min(var(--sidebar-width),calc(100vw-1.25rem))] flex-col border-r bg-[#fffdf9] transition-transform duration-300 lg:translate-x-0 ${open?'translate-x-0':'-translate-x-full'}`} style={{borderColor:'var(--border)'}}><div className="flex h-[112px] items-center justify-between px-6"><Logo variant="sidebar"/><button type="button" onClick={onClose} className="grid h-10 w-10 place-items-center rounded-xl text-[var(--muted)] hover:bg-[var(--background)] lg:hidden" aria-label="Fechar menu"><X size={19}/></button></div><nav className="flex-1 overflow-y-auto px-4 pb-5">{groups.map(g=><div key={g.label} className="mb-7"><p className="px-3 pb-2 text-[10px] font-bold tracking-[.17em] text-[#a99b96]">{g.label}</p><div className="space-y-1">{g.items.map(([href,label,Icon])=>{const active=path===href||(href!=='/dashboard'&&path.startsWith(`${href}/`));return <Link key={href} href={href} onClick={onClose} aria-current={active?'page':undefined} className={`group relative flex min-h-12 items-center gap-3 rounded-xl px-3.5 text-sm transition duration-200 ${active?'bg-[var(--accent-soft)] font-bold text-[var(--foreground)]':'text-[var(--muted-foreground)] hover:bg-[#fff7f2] hover:text-[var(--foreground)]'}`}>{active&&<span className="absolute left-0 top-2.5 h-7 w-1 rounded-r-full bg-[var(--accent)]"/>}<span className={`grid h-8 w-8 place-items-center rounded-lg transition ${active?'bg-white text-[var(--primary)] shadow-sm':'text-[var(--muted)] group-hover:text-[var(--primary)]'}`}><Icon size={17} strokeWidth={active?2.1:1.8}/></span><span>{label}</span></Link>})}</div></div>)}</nav><div className="border-t px-5 py-4" style={{borderColor:'var(--border)'}}><Link href="/configuracoes" onClick={onClose} className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition hover:bg-[var(--background)] ${path==='/configuracoes'?'bg-[var(--primary-soft)] text-[var(--primary)]':'text-[var(--muted-foreground)]'}`}><Settings size={18}/><span>Configurações</span></Link><p className="mt-3 px-3 text-[10px] leading-4 text-[var(--muted)]">Um espaço feito com carinho para a Tia Sol.</p></div></aside></>}
