@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Fraunces, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-sans' });
+const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-display' });
 
 export const metadata: Metadata = {
   title: 'TIA SOL | Gestão de Eventos & Recreação',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={`${jakarta.variable} ${fraunces.variable}`}>
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">{children}</body>
     </html>
   );
