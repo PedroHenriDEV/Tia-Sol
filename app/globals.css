@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbfaf7;
+  --foreground: #253338;
+  --primary: #087f8c;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e8f4f3;
+  --secondary: #d93679;
+  --accent: #e6a900;
+  --muted: #788587;
+  --muted-foreground: #536267;
+  --border: #e5e9e6;
+  --card: #ffffff;
+  --success: #43846a;
+  --warning: #b27c05;
+  --danger: #c34e52;
+  --radius-sm: 9px;
+  --radius-md: 13px;
+  --shadow-soft: 0 5px 20px rgba(37, 51, 56, 0.055);
+  --sidebar-width: 256px;
+  --font-sans: "Inter", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+@layer components {
+  .section-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--primary)];
+  }
+
+  .input {
+    @apply h-11 w-full rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-soft)];
+  }
+
+  .button-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-[var(--primary)] px-5 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--background)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .feedback-error {
+    @apply rounded-xl border px-3 py-2 text-sm text-[var(--danger)];
+    border-color: color-mix(in srgb, var(--danger) 18%, transparent);
+    background-color: color-mix(in srgb, var(--danger) 5%, transparent);
+  }
+}
