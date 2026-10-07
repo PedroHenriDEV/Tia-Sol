@@ -41,24 +41,41 @@ revoke all on function public.has_event_conflict(uuid, date, time, time, uuid) f
 grant execute on function public.has_event_conflict(uuid, date, time, time, uuid) to authenticated;
 
 
--- Garante no banco que dois eventos ativos da mesma empresa não ocupem
--- horários sobrepostos, evitando corrida entre duas criações simultâneas.
-create extension if not exists btree_gist;
+-- Serializa a checagem de conflito por empresa/data para evitar corrida
+-- entre duas criações simultâneas sem exigir limpeza dos dados existentes.
+create or replace function public.prevent_event_overlap()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $
+begin
+  perform pg_advisory_xact_lock(hashtextextended(NEW.company_id::text || ':' || NEW.event_date::text, 0));
 
-alter table public.events
-  drop constraint if exists events_no_overlap;
+  if NEW.status <> 'cancelado' and exists (
+    select 1
+    from public.events e
+    where e.company_id = NEW.company_id
+      and e.event_date = NEW.event_date
+      and e.status <> 'cancelado'
+      and e.id <> NEW.id
+      and e.start_time < NEW.end_time
+      and e.end_time > NEW.start_time
+  ) then
+    raise exception 'Já existe outro evento nesse horário.';
+  end if;
 
-alter table public.events
-  add constraint events_no_overlap
-  exclude using gist (
-    company_id with =,
-    tsrange(
-      (event_date + start_time)::timestamp,
-      (event_date + end_time)::timestamp,
-      '[)'
-    ) with &&
-  )
-  where (status <> 'cancelado');
+  return NEW;
+end;
+$;
+
+drop trigger if exists events_overlap_guard on public.events;
+create trigger events_overlap_guard
+before insert or update on public.events
+for each row execute function public.prevent_event_overlap();
+
+revoke all on function public.prevent_event_overlap() from public;
+grant execute on function public.prevent_event_overlap() to authenticated;
 
 -- Movimentações de estoque devem passar pela RPC transacional,
 -- que valida saldo e atualiza o material.
