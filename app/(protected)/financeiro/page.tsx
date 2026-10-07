@@ -3,13 +3,15 @@ import { listEvents } from '@/services/events';
 import { listFinancialTransactions } from '@/services/finance';
 import { getMyCompany } from '@/services/company';
 import { FinanceManager } from '@/components/finance/finance-manager';
+import type { EventRecord } from '@/types/event';
+import type { FinancialTransaction, Company } from '@/types/database';
 
 export default async function FinanceiroPage() {
   const supabase = await createClient();
 
-  let transactions = [];
-  let events = [];
-  let company = null;
+  let transactions: FinancialTransaction[] = [];
+  let events: EventRecord[] = [];
+  let company: Company | null = null;
   let errorMessage: string | null = null;
 
   try {
