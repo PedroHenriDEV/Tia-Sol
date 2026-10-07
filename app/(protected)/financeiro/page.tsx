@@ -1,15 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 import { listEvents } from '@/services/events';
 import { listFinancialTransactions } from '@/services/finance';
+import { getMyCompany } from '@/services/company';
 import { FinanceManager } from '@/components/finance/finance-manager';
 
 export default async function FinanceiroPage() {
   const supabase = await createClient();
 
   try {
-    const [transactions, events] = await Promise.all([
+    const [transactions, events, company] = await Promise.all([
       listFinancialTransactions(supabase),
       listEvents(supabase),
+      getMyCompany(supabase),
     ]);
 
     return (
@@ -26,6 +28,7 @@ export default async function FinanceiroPage() {
         <FinanceManager
           initialTransactions={transactions}
           events={events.map((event) => ({ id: event.id, title: event.title }))}
+          company={company}
         />
       </div>
     );
