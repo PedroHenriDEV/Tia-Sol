@@ -99,3 +99,30 @@ export async function registerMaterialMovement(
   if (error) throw error;
   return data as MaterialMovement;
 }
+export type MaterialPurchaseInput = {
+  material_id: string;
+  event_id: string | null;
+  quantity: number;
+  unit_cost: number;
+  reason: string;
+  due_date: string;
+  status: 'pendente' | 'pago';
+};
+
+export async function registerMaterialPurchase(
+  supabase: SupabaseClient,
+  input: MaterialPurchaseInput,
+): Promise<MaterialMovement> {
+  const { data, error } = await supabase.rpc('register_material_purchase', {
+    p_material_id: input.material_id,
+    p_event_id: input.event_id,
+    p_quantity: Number(input.quantity),
+    p_unit_cost: Number(input.unit_cost),
+    p_reason: input.reason.trim(),
+    p_due_date: input.due_date,
+    p_status: input.status,
+  });
+
+  if (error) throw error;
+  return data as MaterialMovement;
+}
