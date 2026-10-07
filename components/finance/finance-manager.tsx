@@ -149,8 +149,8 @@ export function FinanceManager({ initialTransactions, events, company }: { initi
               </div>
               <div className="min-w-0 flex-1"><p className="font-semibold">{item.description}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{item.category} · {dateBR(item.due_date)}{item.event_id ? ' · evento vinculado' : ''}</p></div>
               <span className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-bold ${item.status === 'pago' ? 'bg-[var(--success-soft)] text-[var(--success)]' : item.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : 'bg-[var(--warning-soft)] text-[var(--warning)]'}`}>{statusLabel[item.status]}</span>
-              <p className={`min-w-32 text-left font-bold sm:text-right ${item.type === 'receita' ? 'text-[var(--secondary)]' : 'text-[var(--warning)]'}`}>{item.type === 'receita' ? '+' : '−'} {money(Number(item.amount))}</p>
-              <div className="flex gap-1">{item.type === 'receita' && item.status === 'pago' && <button title="Gerar recibo" onClick={() => printReceipt(item)} className="rounded-lg p-2 text-[var(--secondary)] hover:bg-[var(--secondary-soft)]"><Printer size={16} /></button>}<button title="Editar" onClick={() => openEdit(item)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button title="Excluir" onClick={() => handleDelete(item)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
+              <p className={`sm:min-w-32 text-left font-bold sm:text-right ${item.type === 'receita' ? 'text-[var(--secondary)]' : 'text-[var(--warning)]'}`}>{item.type === 'receita' ? '+' : '−'} {money(Number(item.amount))}</p>
+              <div className="flex flex-wrap gap-1">{item.type === 'receita' && item.status === 'pago' && <button title="Gerar recibo" onClick={() => printReceipt(item)} className="rounded-lg p-2 text-[var(--secondary)] hover:bg-[var(--secondary-soft)]"><Printer size={16} /></button>}<button title="Editar" onClick={() => openEdit(item)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button title="Excluir" onClick={() => handleDelete(item)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
             </div>
           ))}
           {!visible.length && <div className="px-6 py-12 text-center text-sm text-[var(--muted)]">Nenhum lançamento encontrado.</div>}
@@ -194,7 +194,7 @@ export function FinanceManager({ initialTransactions, events, company }: { initi
               <label className="space-y-1.5 sm:col-span-2"><span className="text-sm font-medium">Observações</span><textarea rows={3} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} className="input resize-none" /></label>
             </div>
             {feedback && <p className={feedback.type === 'success' ? 'feedback-success mt-4' : 'feedback-error mt-4'}>{feedback.text}</p>}
-            <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setOpen(false)} className="button-secondary">Cancelar</button><button disabled={saving} className="button-primary disabled:opacity-60">{saving ? 'Salvando...' : editing ? 'Salvar alterações' : 'Salvar lançamento'}</button></div>
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={() => setOpen(false)} className="button-secondary">Cancelar</button><button disabled={saving} className="button-primary disabled:opacity-60">{saving ? 'Salvando...' : editing ? 'Salvar alterações' : 'Salvar lançamento'}</button></div>
           </form>
         </div>
       )}
