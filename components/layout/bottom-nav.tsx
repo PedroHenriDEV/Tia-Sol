@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 
 export function BottomNav() {
   const path = usePathname();
-  const items = [['/dashboard', 'Início', LayoutDashboard], ['/em-breve/agenda', 'Agenda', CalendarDays], ['/em-breve/eventos', 'Eventos', PartyPopper], ['/configuracoes', 'Mais', MoreHorizontal]] as const;
+  const items = [['/dashboard', 'Início', LayoutDashboard], ['/agenda', 'Agenda', CalendarDays], ['/em-breve/eventos', 'Eventos', PartyPopper], ['/configuracoes', 'Mais', MoreHorizontal]] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/96 px-3 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl" style={{ borderColor: 'var(--border)' }}>
       <div className="mx-auto flex max-w-md items-center justify-around">
