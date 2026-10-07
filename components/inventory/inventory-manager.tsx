@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowDownToLine, ArrowUpFromLine, Boxes, MapPin, Pencil, Plus, Search, X } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Boxes, CircleAlert, CircleCheck, MapPin, Package, Pencil, Plus, Search, Wallet, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { Material, MaterialMovement } from '@/types/inventory';
 import type { EventRecord } from '@/types/event';
@@ -26,6 +26,8 @@ export function InventoryManager({ initialMaterials, initialMovements, events }:
   const low = materials.filter(m => m.quantity <= m.minimum_quantity).length;
   const empty = materials.filter(m => m.quantity === 0).length;
   const stockValue = materials.reduce((sum, m) => sum + Number(m.quantity) * Number(m.unit_cost), 0);
+  const totalUnits = materials.reduce((sum, m) => sum + Number(m.quantity), 0);
+  const attention = materials.filter(m => Number(m.quantity) <= Number(m.minimum_quantity)).sort((a, b) => Number(a.quantity) - Number(b.quantity));
 
   function openMaterial(item?: Material) {
     setEditing(item ?? null);
@@ -70,10 +72,10 @@ export function InventoryManager({ initialMaterials, initialMovements, events }:
 
   return <div className="space-y-6">
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Kpi icon={<Boxes size={19} />} label="Materiais" value={String(materials.length)} helper="Itens cadastrados" />
-      <Kpi icon={<ArrowDownToLine size={19} />} label="Estoque baixo" value={String(low)} helper="No limite ou abaixo" />
-      <Kpi icon={<X size={19} />} label="Sem estoque" value={String(empty)} helper="Precisam de reposição" />
-      <Kpi icon={<Boxes size={19} />} label="Valor estimado" value={money(stockValue)} helper="Quantidade × custo unitário" />
+      <Kpi icon={<Boxes size={19} />} label="Materiais cadastrados" value={String(materials.length)} helper="Tipos de itens ativos" />
+      <Kpi icon={<CircleAlert size={19} />} label="Precisam de reposição" value={String(attention.length)} helper="Abaixo ou no estoque mínimo" />
+      <Kpi icon={<Package size={19} />} label="Quantidade disponível" value={totalUnits.toLocaleString("pt-BR")} helper="Soma das unidades" />
+      <Kpi icon={<Wallet size={19} />} label="Valor atual do estoque" value={money(stockValue)} helper="Quantidade × custo unitário" />
     </div>
 
     <section className="surface p-5 sm:p-6">
@@ -87,6 +89,8 @@ export function InventoryManager({ initialMaterials, initialMovements, events }:
       </div>
       <div className="relative mt-5 max-w-md"><Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]"/><input className="input pl-10" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar material ou categoria..." /></div>
     </section>
+
+    <section className="grid gap-6 lg:grid-cols-[1.3fr_.7fr]"><div className="surface p-5 sm:p-6"><p className="section-label">REPOSIÇÃO</p><h2 className="mt-1 text-lg font-semibold">O que precisa ser comprado?</h2><p className="mt-1 text-xs text-[var(--muted)]">Materiais abaixo do mínimo e quanto falta.</p><div className="mt-4 space-y-3">{attention.slice(0,5).map(item => { const q=Number(item.quantity), min=Number(item.minimum_quantity), missing=Math.max(min-q,0); return <div key={item.id} className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] p-3"><div><p className="text-sm font-semibold">{item.name}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{q.toLocaleString("pt-BR")} {item.unit} disponíveis · mínimo {min.toLocaleString("pt-BR")}</p></div><div className="text-right"><span className={q===0?"status-badge status-danger":"status-badge status-warning"}>{q===0?"Zerado":"Baixo"}</span><p className="mt-1 text-[10px] text-[var(--muted)]">faltam {missing.toLocaleString("pt-BR")} {item.unit}</p></div></div> })}{!attention.length&&<div className="flex items-center gap-2 rounded-2xl bg-[var(--success-soft)] p-3 text-sm text-[var(--success)]"><CircleCheck size={18}/>Estoque dentro do mínimo.</div>}</div></div><div className="surface p-5 sm:p-6"><p className="section-label">RESUMO</p><h2 className="mt-1 text-lg font-semibold">Situação atual</h2><div className="mt-4 space-y-3 text-sm"><p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Zerados</span><strong>{empty}</strong></p><p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Estoque baixo</span><strong>{low}</strong></p><p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Quantidade total</span><strong>{totalUnits.toLocaleString("pt-BR")}</strong></p><p className="flex justify-between border-t border-[var(--border)] pt-3"><span className="font-medium">Valor estimado</span><strong>{money(stockValue)}</strong></p></div></div></section>
 
     <section className="surface overflow-hidden">
       <div className="hidden grid-cols-[minmax(0,1.7fr)_1fr_1fr_1fr_1fr_auto] gap-4 border-b border-[var(--border)] px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] md:grid"><span>Material</span><span>Categoria</span><span>Quantidade</span><span>Mínimo</span><span>Valor</span><span/></div>
