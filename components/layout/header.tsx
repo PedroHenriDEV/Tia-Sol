@@ -10,7 +10,7 @@ const pageCopy: Record<string, { title: string; subtitle: string }> = {
   '/pacotes': { title: 'Pacotes', subtitle: 'Experiências de recreação prontas para cada festa.' },
   '/configuracoes': { title: 'Configurações', subtitle: 'Preferências e dados do espaço de trabalho.' },
   '/agenda': { title: 'Agenda', subtitle: 'Compromissos e eventos da Tia Sol.' },
-  '/em-breve/eventos': { title: 'Eventos', subtitle: 'Organize cada festa do começo ao fim.' },
+  '/eventos': { title: 'Eventos', subtitle: 'Organize cada festa do começo ao fim.' },
   '/financeiro': { title: 'Financeiro', subtitle: 'Valores recebidos, pendências e próximos pagamentos.' },
   '/em-breve/contratos': { title: 'Contratos', subtitle: 'Documentos dos eventos e seus detalhes.' },
 };
