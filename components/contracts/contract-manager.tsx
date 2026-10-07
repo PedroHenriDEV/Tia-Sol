@@ -44,7 +44,7 @@ function companyName(company: Company | null) {
   return company?.trade_name || company?.legal_name || 'TIA SOL RECREAÇÃO INFANTIL LTDA';
 }
 
-function buildContractText(form: ContractInput, number: string, company: Company | null) {
+function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
   const name = companyName(company);
   const cnpj = company?.tax_id || 'não informado';
   const phone = company?.phone || company?.whatsapp || 'não informado';
@@ -76,6 +76,7 @@ O presente contrato tem como objeto a prestação de serviços especializados de
 • Estimativa de crianças: ${form.children_estimate || 0}
 • Faixa etária: ${form.age_range || 'não informada'}
 • Tema do evento: ${form.event_theme || 'não informado'}
+• Pacote contratado: ${packageName || 'não informado'}
 
 CLÁUSULA 2ª – DA DATA, HORÁRIO E LOCAL DO EVENTO
 
@@ -191,7 +192,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     if (!pack) return;
     patch({
       package_id: pack.id,
-      total_amount: pack.price,
+      total_amount: pack.price > 0 ? pack.price : form.total_amount,
       included_activities: [...pack.activities],
       additional_payment_terms: pack.notes || '',
     });
@@ -241,7 +242,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     setSaving(true);
     setFeedback('');
     try {
-      const generated = buildContractText(parsed.data, number, company);
+      const generated = buildContractText(parsed.data, number, company, packages.find((item) => item.id === parsed.data.package_id)?.name);
       const supabase = createSupabaseClient();
       if (editing) {
         const updated = await updateContract(supabase, editing.id, parsed.data, generated);
@@ -259,6 +260,32 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     } finally {
       setSaving(false);
     }
+  }
+
+  function openView(contract: ContractRecord) {
+    setEditing(contract);
+    setNumber(String(contract.contract_number).padStart(3, '0') + '/' + contract.contract_year);
+    setForm({
+      event_id: contract.event_id, client_id: contract.client_id, package_id: contract.package_id, status: contract.status,
+      contractor_name: contract.contractor_name, contractor_document: contract.contractor_document || '',
+      contractor_rg: contract.contractor_rg || '', contractor_address: contract.contractor_address || '',
+      contractor_phone: contract.contractor_phone || '', contractor_email: contract.contractor_email || '',
+      celebrant_name: contract.celebrant_name || '', children_estimate: contract.children_estimate || 0,
+      age_range: contract.age_range || '', event_theme: contract.event_theme || '', event_date: contract.event_date || '',
+      start_time: contract.start_time?.slice(0, 5) || '', end_time: contract.end_time?.slice(0, 5) || '',
+      event_location: contract.event_location || '', event_location_type: contract.event_location_type || '',
+      team_size: contract.team_size, included_activities: contract.included_activities || [],
+      included_equipment: contract.included_equipment || [], total_amount: contract.total_amount,
+      deposit_amount: contract.deposit_amount, deposit_date: contract.deposit_date || '',
+      balance_amount: contract.balance_amount, balance_due_date: contract.balance_due_date || '',
+      payment_method: contract.payment_method || 'PIX', pix_key: contract.pix_key || company?.pix_key || '',
+      additional_payment_terms: contract.additional_payment_terms || '', arrival_minutes: contract.arrival_minutes,
+      catering_required: contract.catering_required, image_authorized: contract.image_authorized,
+      additional_observations: contract.additional_observations || '', contract_details: contract.contract_details || '',
+    });
+    setFeedback('');
+    setPreview(true);
+    setOpen(true);
   }
 
   async function remove(contract: ContractRecord) {
@@ -319,7 +346,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                   <p className="mt-1 text-xs text-[var(--muted)]">{contract.package?.name || 'Sem pacote'}{contract.event_location ? ' · ' + contract.event_location : ''}</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => { setEditing(contract); setNumber(String(contract.contract_number).padStart(3, '0') + '/' + contract.contract_year); setForm(emptyForm); setPreview(true); }} title="Visualizar" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Eye size={17} /></button>
+                  <button onClick={() => openView(contract)} title="Visualizar" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Eye size={17} /></button>
                   <button onClick={() => openEdit(contract)} title="Editar" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={17} /></button>
                   <button onClick={() => remove(contract)} title="Excluir" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-red-50 hover:text-red-600"><Trash2 size={17} /></button>
                 </div>
@@ -343,9 +370,9 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label><span className="text-sm font-medium">Evento</span><select value={form.event_id || ''} onChange={(e) => selectEvent(e.target.value)} className={select}><option value="">Preenchimento manual</option>{events.filter((e) => e.status !== 'cancelado').map((e) => <option key={e.id} value={e.id}>{e.title} · {dateLabel(e.event_date)}</option>)}</select></label>
-                    <label><span className="text-sm font-medium">Pacote</span><select value={form.package_id || ''} onChange={(e) => selectPackage(e.target.value)} className={select}><option value="">Selecione um pacote</option>{packages.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name} · {money(p.price)}</option>)}</select></label>
+                    <label><span className="text-sm font-medium">Pacote</span><select value={form.package_id || ''} onChange={(e) => selectPackage(e.target.value)} className={select}><option value="">Selecione um pacote</option>{packages.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name}{p.price > 0 ? ` · ${money(p.price)}` : ''}</option>)}</select></label>
                   </div>
-                  {selectedPackage && <div className="mt-3 rounded-xl bg-pink-50 p-3 text-sm text-pink-900"><strong>{selectedPackage.name}</strong> · {selectedPackage.duration}h · {money(selectedPackage.price)}<p className="mt-1 text-xs">Ao selecionar este pacote, as atividades abaixo são preenchidas automaticamente.</p></div>}
+                  {selectedPackage && <div className="mt-3 rounded-xl bg-pink-50 p-3 text-sm text-pink-900"><strong>{selectedPackage.name}</strong> · {selectedPackage.duration}h{selectedPackage.price > 0 ? ` · ${money(selectedPackage.price)}` : ' · Valor a definir'}<p className="mt-1 text-xs">Ao selecionar este pacote, as atividades abaixo são preenchidas automaticamente.</p></div>}
                 </section>
 
                 <section className="rounded-2xl border border-slate-200 p-4">
