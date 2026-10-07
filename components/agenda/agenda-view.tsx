@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X, Clock } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventInput } from '@/validators/event';
 import type { EventRecord, EventStatus } from '@/types/event';
@@ -159,7 +159,7 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
       <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)] overflow-hidden">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4 sm:px-6">
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronLeft size={18} /></button>
-          <h2 className="display-title text-xl capitalize sm:text-2xl">{monthTitle(month)}</h2>
+          <div className="text-center"><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Calendário</p><h2 className="display-title text-xl capitalize sm:text-2xl">{monthTitle(month)}</h2></div>
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronRight size={18} /></button>
         </div>
         <div className="grid grid-cols-7 border-b border-[var(--border)]">
@@ -176,7 +176,7 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
                 <span className={'grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ' + (today ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)]')}>{day.getDate()}</span>
                 <div className="mt-1 space-y-1">
                   {items.slice(0, 2).map((event) => (
-                    <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-1.5 py-1 text-[10px] font-semibold ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]')}>
+                    <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-1.5 py-1 text-[10px] font-semibold ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : event.status === 'confirmado' || event.status === 'contrato_assinado' ? 'bg-[var(--secondary-soft)] text-[var(--secondary)]' : event.status === 'realizado' || event.status === 'finalizado' ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]')}>
                       {event.start_time.slice(0,5)} · {event.title}
                     </span>
                   ))}
@@ -189,14 +189,14 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-center justify-between"><h2 className="display-title text-2xl">Próximos eventos</h2><span className="text-xs text-[var(--muted)]">{events.length} cadastrado(s)</span></div>
+        <div className="flex items-end justify-between gap-3"><div><p className="section-label">AGENDA</p><h2 className="display-title mt-1 text-2xl">Próximos eventos</h2></div><span className="text-xs text-[var(--muted)]">{events.length} cadastrado(s)</span></div>
         {events.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] px-6 py-12 text-center"><CalendarDays className="mx-auto text-[var(--primary)]" /><p className="mt-3 font-semibold">Nenhum evento cadastrado</p><p className="mt-1 text-sm text-[var(--muted)]">Clique em um dia do calendário para marcar uma festa.</p></div>
         ) : (
           <div className="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card)]">
             {events.filter((e) => e.status !== 'cancelado').slice(0, 12).map((event) => (
               <div key={event.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="w-24 shrink-0"><p className="text-xs font-bold text-[var(--primary)]">{formatDate(event.event_date)}</p><p className="mt-1 text-xs text-[var(--muted)]">{event.start_time.slice(0,5)}–{event.end_time.slice(0,5)}</p></div>
+                <div className="w-28 shrink-0 rounded-xl bg-[var(--primary-soft)] p-2.5"><p className="text-xs font-bold text-[var(--primary)]">{formatDate(event.event_date)}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]"><Clock size={12} />{event.start_time.slice(0,5)}–{event.end_time.slice(0,5)}</p></div>
                 <div className="min-w-0 flex-1"><p className="font-semibold">{event.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'} {event.location && <>· <MapPin size={12} /> {event.location}</>}</p></div>
                 <span className="w-fit rounded-full bg-[var(--secondary-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--secondary)]">{statusLabels[event.status]}</span>
                 <div className="flex gap-1"><button onClick={() => openEdit(event)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button onClick={() => remove(event)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
