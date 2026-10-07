@@ -581,8 +581,9 @@ export function InventoryManager({
               <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Saldo inicial</p>
               <p className="mt-1 text-sm text-[var(--muted-foreground)]">Informe quanto você já tem deste material. Depois do cadastro, o saldo deve ser alterado por entradas e saídas.</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <Field label="Quanto tenho agora *">
-                  <input type="number" min="0" step="0.01" className="input" value={materialForm.quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))} />
+                <Field label={editing ? "Quanto tenho agora" : "Quanto tenho agora *"}>
+                  <input type="number" min="0" step="0.01" className={"input " + (editing ? "bg-[var(--background)]" : "")} value={materialForm.quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))} disabled={Boolean(editing)} />
+                  {editing ? <span className="block text-xs text-[var(--muted)]">O saldo é alterado em Entradas ou Registrar uso.</span> : null}
                 </Field>
                 <Field label="Estoque mínimo *">
                   <input type="number" min="0" step="0.01" className="input" value={materialForm.minimum_quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, minimum_quantity: e.target.value }))} />
