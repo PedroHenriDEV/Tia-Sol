@@ -22,11 +22,9 @@ import {
 import type { EventRecord } from '@/types/event';
 import type { ContractRecord } from '@/types/contract';
 import type { Material, MaterialMovement } from '@/types/inventory';
-import type { EventInput } from '@/validators/event';
 import type { FinancialTransaction } from '@/types/finance';
 import { createClient } from '@/lib/supabase/client';
-import { updateEvent } from '@/services/events';
-import { createFinancialTransaction } from '@/services/finance';
+import { registerEventPayment } from '@/services/finance';
 
 type Props = {
   event: EventRecord;
@@ -124,22 +122,12 @@ export function EventCentral({ event, contracts, materials, movements, payments 
     if (amount > balance) { setPaymentFeedback('O pagamento não pode ser maior que o saldo pendente.'); return; }
     setPaymentSaving(true); setPaymentFeedback(null);
     try {
-      const newReceived = Number(event.received_amount) + amount;
-      const nextStatus = newReceived >= Number(event.total_amount) && event.total_amount > 0 ? 'pagamento_completo' : 'pagamento_parcial';
-      const input: EventInput = {
-        title: event.title, client_id: event.client_id, package_id: event.package_id,
-        event_date: event.event_date, start_time: event.start_time.slice(0, 5), end_time: event.end_time.slice(0, 5),
-        location: event.location ?? '', status: nextStatus, total_amount: Number(event.total_amount),
-        received_amount: newReceived, notes: event.notes ?? '',
-      };
       const supabase = createClient();
-      await createFinancialTransaction(supabase, {
-        type: 'receita', event_id: event.id, description: 'Pagamento — ' + event.title,
-        category: 'Evento', amount, due_date: paymentDate,
-        paid_at: new Date(paymentDate + 'T12:00:00').toISOString(), status: 'pago',
-        notes: 'Forma de pagamento: ' + paymentMethod,
+      await registerEventPayment(supabase, event, {
+        amount,
+        paymentDate,
+        paymentMethod,
       });
-      await updateEvent(supabase, event.id, input);
       setPaymentFeedback('Pagamento registrado com sucesso. Atualize a página para conferir o novo saldo.');
       setPaymentAmount('');
       setTimeout(() => setPaymentOpen(false), 900);
