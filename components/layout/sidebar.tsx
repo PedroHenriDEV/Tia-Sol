@@ -7,7 +7,7 @@ import { Logo } from '@/components/ui/logo';
 
 const groups = [
   { label: 'DIA A DIA', items: [['/dashboard', 'Visão geral', LayoutDashboard], ['/agenda', 'Agenda', CalendarDays]] },
-  { label: 'FESTAS', items: [['/em-breve/eventos', 'Eventos', PartyPopper], ['/clientes', 'Clientes', Users], ['/pacotes', 'Pacotes', Package]] },
+  { label: 'FESTAS', items: [['/eventos', 'Eventos', PartyPopper], ['/clientes', 'Clientes', Users], ['/pacotes', 'Pacotes', Package]] },
   { label: 'ESTRUTURA', items: [['/estoque', 'Materiais & estoque', Boxes]] },
   { label: 'ADMINISTRAÇÃO', items: [['/financeiro', 'Financeiro', ChartNoAxesCombined], ['/em-breve/contratos', 'Contratos', FileSignature]] },
 ] as const;
