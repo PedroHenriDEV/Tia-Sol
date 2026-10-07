@@ -21,7 +21,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import type { Material, MaterialMovement } from '@/types/inventory';
 import type { EventRecord } from '@/types/event';
-import { createMaterial, registerMaterialMovement, updateMaterial } from '@/services/inventory';
+import { createMaterial, registerMaterialMovement, registerMaterialPurchase, updateMaterial } from '@/services/inventory';
 
 const money = (value: number) =>
   value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -64,6 +64,7 @@ export function InventoryManager({
   const [tab, setTab] = useState<Tab>('visao');
   const [materialForm, setMaterialForm] = useState(emptyMaterial);
   const [movementForm, setMovementForm] = useState(emptyMovement);
+  const [purchaseForm, setPurchaseForm] = useState({ due_date: new Date().toISOString().slice(0, 10), status: 'pago' as 'pendente' | 'pago' });
   const [editing, setEditing] = useState<Material | null>(null);
   const [modal, setModal] = useState<'material' | 'movement' | null>(null);
   const [saving, setSaving] = useState(false);
@@ -150,6 +151,7 @@ export function InventoryManager({
       type,
       material_id: materialId || materials[0]?.id || '',
     });
+    setPurchaseForm({ due_date: new Date().toISOString().slice(0, 10), status: 'pago' });
     setFeedback(null);
     setModal('movement');
   }
@@ -209,7 +211,18 @@ export function InventoryManager({
         reason: movementForm.reason,
       };
 
-      const saved = await registerMaterialMovement(createClient(), input);
+      const isPurchase = input.type === 'entrada' && Boolean(input.unit_cost) && input.unit_cost > 0 && movementForm.reason.toLocaleLowerCase().includes('compra');
+      const saved = isPurchase
+        ? await registerMaterialPurchase(createClient(), {
+            material_id: input.material_id,
+            event_id: input.event_id,
+            quantity: input.quantity,
+            unit_cost: input.unit_cost as number,
+            reason: input.reason,
+            due_date: purchaseForm.due_date,
+            status: purchaseForm.status,
+          })
+        : await registerMaterialMovement(createClient(), input);
 
       setMovements((current) => [saved, ...current]);
 
@@ -620,6 +633,22 @@ export function InventoryManager({
             <Field label="Motivo *" className="sm:col-span-2">
               <input className="input" value={movementForm.reason} onChange={(e) => setMovementForm((f) => ({ ...f, reason: e.target.value }))} placeholder="Ex.: compra, uso na festa, reposição..." />
             </Field>
+            {movementForm.type === 'entrada' && movementForm.reason.toLocaleLowerCase().includes('compra') && (
+              <>
+                <Field label="Vencimento da compra">
+                  <input type="date" className="input" value={purchaseForm.due_date} onChange={(e) => setPurchaseForm((f) => ({ ...f, due_date: e.target.value }))} />
+                </Field>
+                <Field label="Status financeiro">
+                  <select className="input" value={purchaseForm.status} onChange={(e) => setPurchaseForm((f) => ({ ...f, status: e.target.value as 'pendente' | 'pago' }))}>
+                    <option value="pago">Pago</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </Field>
+                <div className="rounded-2xl bg-[var(--secondary-soft)] p-3 text-xs leading-5 text-[var(--secondary)] sm:col-span-2">
+                  Como o motivo contém “compra” e há custo unitário, esta entrada também será lançada como despesa no Financeiro.
+                </div>
+              </>
+            )}
             {movementForm.type === 'saida' && (
               <div className="rounded-2xl bg-[var(--warning-soft)] p-3 text-xs leading-5 text-[var(--warning)] sm:col-span-2">
                 Para registrar o consumo de uma festa, selecione o evento. Assim esse material ficará no histórico daquela festa.
