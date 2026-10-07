@@ -31,7 +31,11 @@
 * { box-sizing: border-box; }
 html, body { width: 100%; max-width: 100%; overflow-x: clip; }
 html { color-scheme: light; scroll-behavior: smooth; }
-body { margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }\n\nimg, svg, video, canvas { max-width: 100%; }\ninput, textarea, select, button { max-width: 100%; }\nbutton, a { touch-action: manipulation; }
+body { margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
+
+img, svg, video, canvas { max-width: 100%; }
+input, textarea, select, button { max-width: 100%; }
+button, a { touch-action: manipulation; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 ::selection { background: var(--primary-soft); color: var(--foreground); }
 
@@ -53,8 +57,10 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   .button-secondary[data-tone="green"]:hover { background: var(--success); color: white; border-color: var(--success); box-shadow: 0 5px 0 #368665; }
   .button-secondary[data-tone="red"] { color: var(--danger); background: var(--danger-soft); border-color: #f0c3c7; }
   .button-secondary[data-tone="red"]:hover { background: var(--danger); color: white; border-color: var(--danger); box-shadow: 0 5px 0 #b94752; }
-  .surface { border: 1px solid var(--border); background: var(--card); border-radius: 18px; box-shadow: var(--shadow-soft); }\n  .responsive-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .feedback-error { @apply rounded-xl border px-3 py-2 text-sm; border-color: color-mix(in srgb, var(--danger) 20%, transparent); background: var(--danger-soft); color: var(--danger); }\n  @media print {
+  .surface { border: 1px solid var(--border); background: var(--card); border-radius: 18px; box-shadow: var(--shadow-soft); }
+  .responsive-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .feedback-error { @apply rounded-xl border px-3 py-2 text-sm; border-color: color-mix(in srgb, var(--danger) 20%, transparent); background: var(--danger-soft); color: var(--danger); }
+  @media print {
     body * { visibility: hidden !important; }
     .print-receipt, .print-receipt * { visibility: visible !important; }
     .print-receipt { display: block !important; position: absolute; inset: 0; width: 100%; }
