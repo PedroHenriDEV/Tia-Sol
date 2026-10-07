@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, Clock3, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Clock3, Pencil, Plus, Search, Trash2, X, Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventRecord } from '@/types/event';
 import { eventSchema, type EventInput } from '@/validators/event';
 import { createEvent, deleteEvent, updateEvent } from '@/services/events';
 import { createClient } from '@/lib/supabase/client';
+import { getEventUrgency } from '@/lib/event-urgency';
 
 type Props = { initialEvents: EventRecord[]; clients: Client[]; packages: Package[] };
 
@@ -168,15 +169,18 @@ export function EventManager({ initialEvents, clients, packages }: Props) {
           <div className="divide-y divide-slate-100">
             {filtered.map((event) => {
               const balance = Math.max(0, event.total_amount - event.received_amount);
+              const urgency = getEventUrgency(event.event_date);
               return (
-                <div key={event.id} className="flex flex-col gap-4 p-4 transition hover:bg-slate-50 lg:flex-row lg:items-center lg:justify-between">
+                <div key={event.id} className={`flex flex-col gap-4 border-l-4 p-4 transition hover:bg-slate-50 lg:flex-row lg:items-center lg:justify-between ${urgency.softClassName}`}>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="truncate font-semibold text-slate-900">{event.title}</h2>
                       <span className="rounded-full bg-pink-50 px-2.5 py-1 text-[11px] font-semibold text-pink-700">{statusLabels[event.status]}</span>
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${urgency.className}`}>{urgency.label}</span>
                     </div>
                     <p className="mt-1 text-sm text-slate-500">{event.client?.name ?? 'Sem cliente'} · {dateLabel(event.event_date)} · {event.start_time.slice(0, 5)}–{event.end_time.slice(0, 5)}</p>
                     <p className="mt-1 truncate text-sm text-slate-500">{event.location || 'Local não informado'}{event.package?.name ? ` · ${event.package.name}` : ''}</p>
+                    {urgency.reminder && <p className={`mt-2 inline-flex items-center gap-1.5 text-xs font-semibold ${urgency.className.split(' ').find((item) => item.startsWith('text-')) ?? 'text-slate-600'}`}><Bell size={13} /> {urgency.reminder}</p>}
                   </div>
                   <div className="flex flex-wrap items-center gap-3 lg:justify-end">
                     <div className="text-left lg:text-right"><p className="text-xs text-slate-400">Total</p><p className="font-semibold text-slate-900">{money(event.total_amount)}</p>{balance > 0 && <p className="text-xs text-amber-600">Saldo {money(balance)}</p>}</div>
