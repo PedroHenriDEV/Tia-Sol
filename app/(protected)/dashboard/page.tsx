@@ -4,11 +4,13 @@ import { createClient } from '@/lib/supabase/server';
 
 export default async function Page() {
   const supabase = await createClient();
+  let events = [];
 
   try {
-    const events = await listEvents(supabase);
-    return <Dashboard events={events} />;
+    events = await listEvents(supabase);
   } catch {
-    return <Dashboard events={[]} />;
+    events = [];
   }
+
+  return <Dashboard events={events} />;
 }
