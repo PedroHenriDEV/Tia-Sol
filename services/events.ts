@@ -15,6 +15,18 @@ export async function listEvents(supabase: SupabaseClient, from?: string, to?: s
   return (data ?? []) as EventRecord[];
 }
 
+export async function getEventById(supabase: SupabaseClient, id: string): Promise<EventRecord | null> {
+  const companyId = await getCurrentCompanyId(supabase);
+  const { data, error } = await supabase
+    .from('events')
+    .select(eventSelect)
+    .eq('company_id', companyId)
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data ?? null) as EventRecord | null;
+}
+
 export async function checkEventConflict(
   supabase: SupabaseClient,
   input: Pick<EventInput, 'event_date' | 'start_time' | 'end_time'>,
