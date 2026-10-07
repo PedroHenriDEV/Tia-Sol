@@ -45,8 +45,32 @@ export async function createContract(supabase: SupabaseClient, input: ContractIn
     contract_number: nextNumber,
   };
   const { data, error } = await supabase.from('contracts').insert(payload).select(contractSelect).single();
-  if (error) throw error;
-  return data as ContractRecord;
+  if (!error && data) return data as ContractRecord;
+
+  // A restrição UNIQUE no banco protege contra numeração duplicada em concorrência.
+  // Se outra criação venceu a corrida, recalculamos o próximo número e tentamos uma vez.
+  if (error?.code === '23505') {
+    const { data: retryLast } = await supabase
+      .from('contracts')
+      .select('contract_number')
+      .eq('company_id', companyId)
+      .eq('contract_year', year)
+      .order('contract_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const retryPayload = { ...payload, contract_number: Number(retryLast?.contract_number ?? 0) + 1 };
+    const { data: retryData, error: retryError } = await supabase
+      .from('contracts')
+      .insert(retryPayload)
+      .select(contractSelect)
+      .single();
+
+    if (!retryError && retryData) return retryData as ContractRecord;
+    throw retryError ?? error;
+  }
+
+  throw error;
 }
 
 export async function updateContract(supabase: SupabaseClient, id: string, input: ContractInput, generatedText: string): Promise<ContractRecord> {
