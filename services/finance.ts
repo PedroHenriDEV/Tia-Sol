@@ -76,3 +76,70 @@ export async function deleteFinancialTransaction(
 
   if (error) throw error;
 }
+
+
+export async function registerEventPayment(
+  supabase: SupabaseClient,
+  event: {
+    id: string;
+    title: string;
+    company_id: string;
+    total_amount: number;
+    received_amount: number;
+  },
+  input: {
+    amount: number;
+    paymentDate: string;
+    paymentMethod: string;
+  },
+): Promise<FinancialTransaction> {
+  const amount = Number(input.amount);
+  if (!amount || amount <= 0) throw new Error('O valor do pagamento deve ser maior que zero.');
+
+  const newReceived = Number(event.received_amount) + amount;
+  if (newReceived > Number(event.total_amount)) {
+    throw new Error('O pagamento não pode ser maior que o saldo pendente.');
+  }
+
+  const nextStatus = newReceived >= Number(event.total_amount) && Number(event.total_amount) > 0
+    ? 'pagamento_completo'
+    : 'pagamento_parcial';
+
+  const { data: transaction, error: transactionError } = await supabase
+    .from('financial_transactions')
+    .insert({
+      company_id: event.company_id,
+      event_id: event.id,
+      type: 'receita',
+      description: 'Pagamento — ' + event.title,
+      category: 'Evento',
+      amount,
+      due_date: input.paymentDate,
+      paid_at: new Date(input.paymentDate + 'T12:00:00').toISOString(),
+      status: 'pago',
+      notes: 'Forma de pagamento: ' + input.paymentMethod,
+    })
+    .select('*')
+    .single();
+
+  if (transactionError) throw transactionError;
+
+  const { data: updatedEvent, error: eventError } = await supabase
+    .from('events')
+    .update({
+      received_amount: newReceived,
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', event.id)
+    .eq('received_amount', Number(event.received_amount))
+    .select('id')
+    .maybeSingle();
+
+  if (eventError || !updatedEvent) {
+    await supabase.from('financial_transactions').delete().eq('id', transaction.id);
+    throw new Error('O evento foi alterado por outra operação. Atualize a página e registre o pagamento novamente.');
+  }
+
+  return transaction as FinancialTransaction;
+}
