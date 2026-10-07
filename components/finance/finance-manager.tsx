@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { ArrowDownCircle, ArrowUpCircle, CalendarDays, FileText, Pencil, Plus, Printer, Trash2, X } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, CalendarDays, Pencil, Plus, Printer, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { FinancialStatus, FinancialTransaction, FinancialType } from '@/types/finance';
 import type { Company } from '@/types/database';
