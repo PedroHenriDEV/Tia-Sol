@@ -6,7 +6,7 @@ import { CalendarDays, ChartNoAxesCombined, FileSignature, LayoutDashboard, Pack
 import { Logo } from '@/components/ui/logo';
 
 const groups = [
-  { label: 'DIA A DIA', items: [['/dashboard', 'Visão geral', LayoutDashboard], ['/em-breve/agenda', 'Agenda', CalendarDays]] },
+  { label: 'DIA A DIA', items: [['/dashboard', 'Visão geral', LayoutDashboard], ['/agenda', 'Agenda', CalendarDays]] },
   { label: 'FESTAS', items: [['/em-breve/eventos', 'Eventos', PartyPopper], ['/clientes', 'Clientes', Users], ['/pacotes', 'Pacotes', Package]] },
   { label: 'ADMINISTRAÇÃO', items: [['/em-breve/financeiro', 'Financeiro', ChartNoAxesCombined], ['/em-breve/contratos', 'Contratos', FileSignature]] },
 ] as const;
