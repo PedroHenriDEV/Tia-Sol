@@ -15,6 +15,7 @@ import {
   WalletCards,
   Wrench,
   MessageCircle,
+  ClipboardCheck,
 } from 'lucide-react';
 import type { EventRecord } from '@/types/event';
 import type { ContractRecord } from '@/types/contract';
@@ -201,6 +202,25 @@ export function EventCentral({ event, contracts, materials, movements }: Props) 
         </div>
 
         <aside className="space-y-5">
+          <Section icon={ClipboardCheck} title="Checklist do evento">
+            <div className="space-y-3">
+              {[
+                { label: 'Cliente vinculado', done: Boolean(event.client_id) },
+                { label: 'Pacote definido', done: Boolean(event.package_id) },
+                { label: 'Contrato gerado', done: Boolean(contract) },
+                { label: 'Contrato assinado', done: contract?.status === 'assinado' },
+                { label: 'Pagamento concluído', done: event.total_amount > 0 && event.received_amount >= event.total_amount },
+                { label: 'Materiais separados / registrados', done: movements.length > 0 },
+                { label: 'Evento realizado', done: ['realizado', 'finalizado'].includes(event.status) },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                  {item.done ? <CheckCircle2 size={18} className="shrink-0 text-emerald-500" /> : <CircleAlert size={18} className="shrink-0 text-amber-500" />}
+                  <span className={item.done ? 'text-sm font-medium text-emerald-700 line-through' : 'text-sm font-medium text-slate-700'}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+
           <Section icon={WalletCards} title="Financeiro">
             <div className="space-y-4">
               <div><div className="flex justify-between text-xs font-medium text-slate-500"><span>Recebido</span><span>{Math.round(paymentPercent)}%</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${paymentPercent}%` }} /></div></div>
