@@ -39,3 +39,27 @@ $$;
 
 revoke all on function public.has_event_conflict(uuid, date, time, time, uuid) from public;
 grant execute on function public.has_event_conflict(uuid, date, time, time, uuid) to authenticated;
+
+
+-- Garante no banco que dois eventos ativos da mesma empresa não ocupem
+-- horários sobrepostos, evitando corrida entre duas criações simultâneas.
+create extension if not exists btree_gist;
+
+alter table public.events
+  drop constraint if exists events_no_overlap;
+
+alter table public.events
+  add constraint events_no_overlap
+  exclude using gist (
+    company_id with =,
+    tsrange(
+      (event_date + start_time)::timestamp,
+      (event_date + end_time)::timestamp,
+      '[)'
+    ) with &&
+  )
+  where (status <> 'cancelado');
+
+-- Movimentações de estoque devem passar pela RPC transacional,
+-- que valida saldo e atualiza o material.
+drop policy if exists material_movements_insert on public.material_movements;
