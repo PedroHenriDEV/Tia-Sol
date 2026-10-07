@@ -72,6 +72,11 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
       active: packageItem.active,
     });
     setMessage('');
+
+    requestAnimationFrame(() => {
+      formPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('package-form-heading')?.focus();
+    });
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -98,12 +103,14 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
       if (editingId) {
         const updated = await updatePackage(supabase, editingId, payload);
         setPackages((current) => current.map((item) => (item.id === editingId ? updated : item)));
-        resetForm();
+        setDraft(emptyForm);
+        setEditingId(null);
         setMessage('Pacote atualizado com sucesso.');
       } else {
         const created = await createPackage(supabase, payload);
         setPackages((current) => [created, ...current]);
-        resetForm();
+        setDraft(emptyForm);
+        setEditingId(null);
         setMessage('Pacote cadastrado com sucesso.');
       }
     } catch (error) {
