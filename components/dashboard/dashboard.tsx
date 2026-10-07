@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, CalendarDays, CalendarRange, CheckCircle2, Package, Plus, Users, Wallet } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CalendarDays, CalendarRange, CheckCircle2, Package, Plus, Users, Wallet, Clock, FileSignature, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import type { EventRecord } from '@/types/event';
 import type { Client, Package as PackageRecord } from '@/types/database';
@@ -52,6 +52,37 @@ export function Dashboard({ events, clients, packages, transactions, materials }
       <div className="flex items-center gap-2"><AlertTriangle size={18} className="text-red-600"/><div><p className="text-sm font-bold text-red-800">Eventos que precisam de atenção</p><p className="text-xs text-red-700">Há eventos nos próximos 10 dias.</p></div></div>
       <div className="mt-3 grid gap-2 lg:grid-cols-3">{urgent.map(e => { const u=getEventUrgency(e.event_date); return <Link key={e.id} href="/eventos" className={`rounded-xl border bg-white/70 p-3 ${u.softClassName}`}><div className="flex justify-between gap-2"><span className="truncate text-sm font-semibold">{e.title}</span><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${u.className}`}>{u.label}</span></div><p className="mt-1 text-xs text-[var(--muted-foreground)]">{date(e.event_date)} · {e.start_time.slice(0,5)}</p></Link>})}</div>
     </section>}
+
+    <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)]">
+      <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 sm:px-6">
+        <div><p className="section-label">ATENÇÃO</p><h2 className="display-title mt-1 text-2xl">Lembretes e pendências</h2><p className="mt-1 text-xs text-[var(--muted-foreground)]">O que precisa ser resolvido antes dos próximos eventos.</p></div>
+        <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700">{[
+          ...upcoming.filter(e => { const d=Math.ceil((new Date(e.event_date+'T12:00:00').getTime()-new Date(today+'T12:00:00').getTime())/86400000); return d >= 0 && d <= 10; }),
+          ...events.filter(e => e.status !== 'cancelado' && Number(e.received_amount) < Number(e.total_amount)),
+          ...events.filter(e => e.status === 'contrato_gerado'),
+          ...lowStock
+        ].length} itens</span>
+      </div>
+      <div className="grid gap-2 p-5 sm:grid-cols-2 sm:p-6">
+        {[
+          ...upcoming.filter(e => { const d=Math.ceil((new Date(e.event_date+'T12:00:00').getTime()-new Date(today+'T12:00:00').getTime())/86400000); return d >= 0 && d <= 10; }).slice(0,3).map(e => ({ icon: Clock, title: `Evento próximo: ${e.title}`, note: `${date(e.event_date)} · ${e.start_time.slice(0,5)}`, href: `/eventos/${e.id}`, tone: 'amber' })),
+          ...events.filter(e => e.status !== 'cancelado' && Number(e.received_amount) < Number(e.total_amount)).slice(0,3).map(e => ({ icon: CreditCard, title: `Pagamento pendente: ${e.title}`, note: `Saldo ${money(Math.max(0, Number(e.total_amount)-Number(e.received_amount))) }`, href: `/eventos/${e.id}`, tone: 'red' })),
+          ...events.filter(e => e.status === 'contrato_gerado').slice(0,3).map(e => ({ icon: FileSignature, title: `Contrato aguardando assinatura: ${e.title}`, note: date(e.event_date), href: `/eventos/${e.id}`, tone: 'blue' })),
+          ...lowStock.slice(0,3).map(m => ({ icon: Package, title: `Estoque baixo: ${m.name}`, note: `${m.quantity} ${m.unit} · mínimo ${m.minimum_quantity}`, href: '/estoque', tone: 'amber' }))
+        ].slice(0,8).map((item, index) => {
+          const Icon = item.icon;
+          return <Link key={`${item.title}-${index}`} href={item.href} className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-3 transition hover:bg-[var(--muted)]/20">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--muted)]/20"><Icon size={16}/></span>
+            <span className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{item.title}</p><p className="mt-0.5 truncate text-xs text-[var(--muted-foreground)]">{item.note}</p></span>
+            <ArrowRight size={14} className="shrink-0 text-[var(--muted)]"/>
+          </Link>;
+        })}
+        {upcoming.filter(e => { const d=Math.ceil((new Date(e.event_date+'T12:00:00').getTime()-new Date(today+'T12:00:00').getTime())/86400000); return d >= 0 && d <= 10; }).length === 0 &&
+          events.filter(e => e.status !== 'cancelado' && Number(e.received_amount) < Number(e.total_amount)).length === 0 &&
+          events.filter(e => e.status === 'contrato_gerado').length === 0 &&
+          lowStock.length === 0 && <div className="sm:col-span-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"><CheckCircle2 size={18} className="mb-2 text-emerald-600"/>Tudo em dia. Nenhum lembrete pendente.</div>}
+      </div>
+    </section>
 
     <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,.65fr)]">
       <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)]">
