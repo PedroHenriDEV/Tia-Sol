@@ -23,6 +23,7 @@ import type { EventRecord } from '@/types/event';
 import type { ContractRecord } from '@/types/contract';
 import type { Material, MaterialMovement } from '@/types/inventory';
 import type { EventInput } from '@/validators/event';
+import type { FinancialTransaction } from '@/types/finance';
 import { createClient } from '@/lib/supabase/client';
 import { updateEvent } from '@/services/events';
 import { createFinancialTransaction } from '@/services/finance';
@@ -32,6 +33,7 @@ type Props = {
   contracts: ContractRecord[];
   materials: Material[];
   movements: MaterialMovement[];
+  payments: FinancialTransaction[];
 };
 
 const statusLabels: Record<EventRecord['status'], string> = {
@@ -101,7 +103,7 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function EventCentral({ event, contracts, materials, movements }: Props) {
+export function EventCentral({ event, contracts, materials, movements, payments }: Props) {
   const balance = Math.max(0, event.total_amount - event.received_amount);
   const paymentPercent = event.total_amount > 0 ? Math.min(100, (event.received_amount / event.total_amount) * 100) : 0;
   const contract = contracts[0] ?? null;
@@ -250,6 +252,22 @@ export function EventCentral({ event, contracts, materials, movements }: Props) 
                 {contract.generated_text && <details className="rounded-xl border border-slate-200 bg-slate-50"><summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-slate-700">Visualizar contrato gerado</summary><pre className="max-h-[520px] overflow-auto whitespace-pre-wrap border-t border-slate-200 p-4 text-xs leading-5 text-slate-600">{contract.generated_text}</pre></details>}
               </div>
             ) : <div className="flex flex-col gap-3 rounded-xl bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold text-amber-800">Nenhum contrato vinculado</p><p className="mt-1 text-sm text-amber-700">Gere o contrato a partir do módulo de contratos.</p></div><Link href="/contratos" className="inline-flex w-fit items-center gap-2 rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700"><FileText size={16} /> Abrir contratos</Link></div>}
+          </Section>
+
+          <Section icon={WalletCards} title="Histórico de pagamentos">
+            {payments.length ? (
+              <div className="space-y-3">
+                {payments.map((payment) => {
+                  const method = payment.notes?.replace(/^Forma de pagamento:\s*/i, '') || 'Não informado';
+                  return <div key={payment.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><CheckCircle2 size={18} /></div>
+                    <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-slate-800">Pagamento recebido</p><p className="mt-1 text-xs text-slate-500">{new Intl.DateTimeFormat('pt-BR').format(new Date(payment.due_date + 'T12:00:00'))} · {method}</p></div>
+                    <p className="text-base font-bold text-emerald-600">{money(Number(payment.amount))}</p>
+                  </div>;
+                })}
+                <div className="flex justify-between border-t border-slate-100 pt-3 text-sm"><span className="font-medium text-slate-600">Total registrado</span><strong className="text-slate-900">{money(payments.reduce((sum, item) => sum + Number(item.amount), 0))}</strong></div>
+              </div>
+            ) : <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">Nenhum pagamento registrado para este evento ainda.</div>}
           </Section>
 
           <Section icon={Wrench} title="Materiais e estoque">
