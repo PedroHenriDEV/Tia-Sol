@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,6 +24,7 @@ const fields = [
 ] as const;
 
 export function CompanyForm({ company }: { company: Company | null }) {
+  const router = useRouter();
   const [message, setMessage] = useState('');
   const {
     register,
@@ -53,6 +55,7 @@ export function CompanyForm({ company }: { company: Company | null }) {
     try {
       await saveMyCompany(createClient(), data, company?.id);
       setMessage('Configurações salvas com sucesso.');
+      router.refresh();
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'Erro ao salvar.');
     }
