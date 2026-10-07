@@ -4,7 +4,8 @@ import { listFinancialTransactions } from '@/services/finance';
 import { getMyCompany } from '@/services/company';
 import { FinanceManager } from '@/components/finance/finance-manager';
 import type { EventRecord } from '@/types/event';
-import type { FinancialTransaction, Company } from '@/types/database';
+import type { FinancialTransaction } from '@/types/finance';
+import type { Company } from '@/types/database';
 
 export default async function FinanceiroPage() {
   const supabase = await createClient();
