@@ -441,7 +441,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <aside className="lg:sticky lg:top-0 lg:self-start">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  <pre className={(preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72') + ' overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs leading-5 text-slate-700 shadow-sm'}>{buildContractText(form, number, company)}</pre>
+                  <pre className={(preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72') + ' overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs leading-5 text-slate-700 shadow-sm'}>{buildContractText(form, number, company, selectedPackage?.name)}</pre>
                 </div>
               </aside>
             </div>
@@ -449,7 +449,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             {feedback && <div className="mt-5 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
             <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
               <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancelar</button>
-              <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company))} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"><Copy size={16} /> Copiar texto</button>
+              <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"><Copy size={16} /> Copiar texto</button>
               <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
             </div>
           </div>
