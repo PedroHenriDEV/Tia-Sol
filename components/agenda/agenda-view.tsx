@@ -1,13 +1,14 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X, Clock } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X, Clock, Bell } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventInput } from '@/validators/event';
 import type { EventRecord, EventStatus } from '@/types/event';
 import { eventSchema } from '@/validators/event';
 import { createEvent, deleteEvent, updateEvent } from '@/services/events';
 import { createClient } from '@/lib/supabase/client';
+import { getEventUrgency } from '@/lib/event-urgency';
 
 type Props = { initialEvents: EventRecord[]; clients: Client[]; packages: Package[] };
 
@@ -175,11 +176,14 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
               <button key={key} type="button" onClick={() => openCreate(key)} className={'min-h-24 border-b border-r border-[var(--border)] p-2 text-left transition hover:bg-[var(--primary-soft)] sm:min-h-28 ' + (!inMonth ? 'opacity-40 ' : '')}>
                 <span className={'grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ' + (today ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)]')}>{day.getDate()}</span>
                 <div className="mt-1 space-y-1">
-                  {items.slice(0, 2).map((event) => (
-                    <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-1.5 py-1 text-[10px] font-semibold ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : event.status === 'confirmado' || event.status === 'contrato_assinado' ? 'bg-[var(--secondary-soft)] text-[var(--secondary)]' : event.status === 'realizado' || event.status === 'finalizado' ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]')}>
-                      {event.start_time.slice(0,5)} · {event.title}
-                    </span>
-                  ))}
+                  {items.slice(0, 2).map((event) => {
+                    const urgency = getEventUrgency(event.event_date);
+                    return (
+                      <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-1.5 py-1 text-[10px] font-semibold ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : urgency.className)}>
+                        {event.start_time.slice(0,5)} · {event.title}
+                      </span>
+                    );
+                  })}
                   {items.length > 2 && <span className="block px-1 text-[10px] text-[var(--muted)]">+ {items.length - 2} evento(s)</span>}
                 </div>
               </button>
@@ -194,14 +198,20 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
           <div className="rounded-2xl border border-dashed border-[var(--border-strong)] bg-[var(--card)] px-6 py-12 text-center"><CalendarDays className="mx-auto text-[var(--primary)]" /><p className="mt-3 font-semibold">Nenhum evento cadastrado</p><p className="mt-1 text-sm text-[var(--muted)]">Clique em um dia do calendário para marcar uma festa.</p></div>
         ) : (
           <div className="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-            {events.filter((e) => e.status !== 'cancelado').slice(0, 12).map((event) => (
-              <div key={event.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                <div className="w-28 shrink-0 rounded-xl bg-[var(--primary-soft)] p-2.5"><p className="text-xs font-bold text-[var(--primary)]">{formatDate(event.event_date)}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]"><Clock size={12} />{event.start_time.slice(0,5)}–{event.end_time.slice(0,5)}</p></div>
-                <div className="min-w-0 flex-1"><p className="font-semibold">{event.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'} {event.location && <>· <MapPin size={12} /> {event.location}</>}</p></div>
-                <span className="w-fit rounded-full bg-[var(--secondary-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--secondary)]">{statusLabels[event.status]}</span>
-                <div className="flex gap-1"><button onClick={() => openEdit(event)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button onClick={() => remove(event)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
-              </div>
-            ))}
+            {events.filter((e) => e.status !== 'cancelado').slice(0, 12).map((event) => {
+              const urgency = getEventUrgency(event.event_date);
+              return (
+                <div key={event.id} className={'flex flex-col gap-3 border-l-4 p-4 sm:flex-row sm:items-center ' + urgency.softClassName}>
+                  <div className={'w-28 shrink-0 rounded-xl p-2.5 ' + urgency.softClassName}><p className="text-xs font-bold">{formatDate(event.event_date)}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]"><Clock size={12} />{event.start_time.slice(0,5)}–{event.end_time.slice(0,5)}</p></div>
+                  <div className="min-w-0 flex-1"><p className="font-semibold">{event.title}</p><p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'} {event.location && <>· <MapPin size={12} /> {event.location}</>}</p>{urgency.reminder && <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold"><Bell size={13} />{urgency.reminder}</p>}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={'w-fit rounded-full px-2.5 py-1 text-[10px] font-bold ' + urgency.className}>{urgency.label}</span>
+                    <span className="w-fit rounded-full bg-[var(--secondary-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--secondary)]">{statusLabels[event.status]}</span>
+                  </div>
+                  <div className="flex gap-1"><button onClick={() => openEdit(event)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button onClick={() => remove(event)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
