@@ -10,10 +10,15 @@ import {
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
+import type { EventRecord } from '@/types/event';
 import { EmptyState } from '@/components/ui/empty-state';
 
+type Props = {
+  events: EventRecord[];
+};
+
 const metrics = [
-  { icon: CalendarRange, label: 'Eventos próximos', value: '—', note: 'Sua agenda aparecerá aqui', tone: 'primary' },
+  { icon: CalendarRange, label: 'Eventos próximos', tone: 'primary' },
   { icon: Users, label: 'Clientes ativos', value: '—', note: 'Dados reais do cadastro', tone: 'secondary' },
   { icon: Package, label: 'Pacotes ativos', value: '—', note: 'Seu catálogo de recreação', tone: 'accent' },
   { icon: Wallet, label: 'A receber', value: '—', note: 'Valores dos eventos', tone: 'success' },
@@ -21,7 +26,7 @@ const metrics = [
 
 const shortcuts = [
   { href: '/clientes', icon: Users, label: 'Novo cliente', hint: 'Cadastrar contato', tone: 'primary' },
-  { href: '/em-breve/eventos', icon: CalendarDays, label: 'Novo evento', hint: 'Adicionar à agenda', tone: 'secondary' },
+  { href: '/agenda', icon: CalendarDays, label: 'Novo evento', hint: 'Adicionar à agenda', tone: 'secondary' },
   { href: '/pacotes', icon: Package, label: 'Novo pacote', hint: 'Criar experiência', tone: 'accent' },
   { href: '/em-breve/contratos', icon: FileText, label: 'Contratos', hint: 'Ver documentos', tone: 'neutral' },
 ] as const;
@@ -40,7 +45,17 @@ function shortcutTone(tone: (typeof shortcuts)[number]['tone']) {
   return 'bg-[var(--primary-soft)] text-[var(--primary)]';
 }
 
-export function Dashboard() {
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(new Date(value + 'T12:00:00'));
+}
+
+export function Dashboard({ events }: Props) {
+  const upcoming = events
+    .filter((event) => event.status !== 'cancelado')
+    .slice(0, 5);
+
+  const nextEvent = upcoming[0];
+
   return (
     <div className="space-y-8 lg:space-y-10">
       <section className="relative overflow-hidden rounded-[24px] border border-[var(--border)] bg-[var(--card)] px-6 py-7 shadow-[var(--shadow-soft)] sm:px-8 sm:py-8">
@@ -56,7 +71,7 @@ export function Dashboard() {
               Um resumo simples do que está acontecendo com suas festas, clientes e compromissos.
             </p>
           </div>
-          <Link href="/em-breve/eventos" className="button-primary self-start md:self-auto">
+          <Link href="/agenda" className="button-primary self-start md:self-auto">
             <Plus size={17} />
             Novo evento
           </Link>
@@ -64,7 +79,7 @@ export function Dashboard() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map(({ icon: Icon, label, value, note, tone }) => (
+        {metrics.map(({ icon: Icon, label, tone, value = label === 'Eventos próximos' ? String(upcoming.length) : '—', note = label === 'Eventos próximos' ? 'Eventos ativos cadastrados' : undefined }) => (
           <div key={label} className="group rounded-[18px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-hover)]">
             <div className="flex items-center justify-between">
               <span className={"grid h-10 w-10 place-items-center rounded-full " + metricTone(tone)}>
@@ -86,10 +101,30 @@ export function Dashboard() {
               <p className="section-label">Agenda</p>
               <h2 className="display-title mt-1 text-2xl">Próximas festas</h2>
             </div>
-            <CalendarDays size={19} className="text-[var(--secondary)]" />
+            <Link href="/agenda" className="text-xs font-bold text-[var(--primary)] hover:underline">Ver agenda</Link>
           </div>
           <div className="p-5 sm:p-6">
-            <EmptyState icon={CalendarDays} title="Sua próxima celebração aparecerá aqui" description="Quando você cadastrar um evento, os detalhes da próxima festa serão mostrados neste espaço." />
+            {nextEvent ? (
+              <div className="space-y-3">
+                {upcoming.map((event) => (
+                  <Link key={event.id} href="/agenda" className="group flex items-center gap-3 rounded-2xl border border-[var(--border)] p-3 transition hover:border-[var(--primary)]/30 hover:bg-[var(--primary-soft)]">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-center">
+                      <span className="text-[10px] font-bold uppercase text-[var(--primary)]">{formatDate(event.event_date)}</span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{event.title}</p>
+                      <p className="mt-1 flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+                        <CalendarDays size={12} />
+                        {event.start_time.slice(0, 5)} · {event.location || 'Local não informado'}
+                      </p>
+                    </div>
+                    <ArrowRight size={15} className="text-[var(--muted)] transition group-hover:translate-x-1" />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={CalendarDays} title="Sua próxima celebração aparecerá aqui" description="Quando você cadastrar um evento na agenda, ele será exibido neste painel." />
+            )}
           </div>
         </div>
 
