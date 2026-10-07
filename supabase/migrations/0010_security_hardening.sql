@@ -48,7 +48,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $func$
 begin
   perform pg_advisory_xact_lock(hashtextextended(NEW.company_id::text || ':' || NEW.event_date::text, 0));
 
@@ -67,8 +67,7 @@ begin
 
   return NEW;
 end;
-$;
-
+$func$;
 drop trigger if exists events_overlap_guard on public.events;
 create trigger events_overlap_guard
 before insert or update on public.events
