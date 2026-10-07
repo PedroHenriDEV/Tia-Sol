@@ -137,11 +137,7 @@ export function EventManager({ initialEvents, clients, packages }: Props) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ['Eventos ativos', stats.active, CalendarDays],
-          ['Confirmados', stats.confirmed, CheckCircle2],
-          ['Com saldo', stats.pending, Clock3],
-        ].map(([label, value, Icon]) => (
+        {statCards.map(([label, value, Icon]) => (
           <div key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between"><span className="text-sm text-slate-500">{label}</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-pink-50 text-pink-600"><Icon size={17} /></span></div>
             <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
