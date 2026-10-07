@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, type FormEvent } from 'react';
-import { ArrowDownCircle, ArrowUpCircle, CalendarDays, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { ArrowDownCircle, ArrowUpCircle, CalendarDays, FileText, Pencil, Plus, Printer, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { FinancialStatus, FinancialTransaction, FinancialType } from '@/types/finance';
 import { createFinancialTransaction, deleteFinancialTransaction, updateFinancialTransaction } from '@/services/finance';
