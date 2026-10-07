@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowDownCircle, ArrowUpCircle, CalendarDays, FileText, Pencil, Plus, Printer, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { FinancialStatus, FinancialTransaction, FinancialType } from '@/types/finance';
+import type { Company } from '@/types/database';
 import { createFinancialTransaction, deleteFinancialTransaction, updateFinancialTransaction } from '@/services/finance';
 
 type EventOption = { id: string; title: string };
@@ -23,7 +24,7 @@ const emptyForm = {
   notes: '',
 };
 
-export function FinanceManager({ initialTransactions, events }: { initialTransactions: FinancialTransaction[]; events: EventOption[] }) {
+export function FinanceManager({ initialTransactions, events, company }: { initialTransactions: FinancialTransaction[]; events: EventOption[]; company: Company | null }) {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<FinancialTransaction | null>(null);
@@ -31,6 +32,7 @@ export function FinanceManager({ initialTransactions, events }: { initialTransac
   const [filter, setFilter] = useState<'todos' | 'receita' | 'despesa' | 'pendente'>('todos');
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [receipt, setReceipt] = useState<FinancialTransaction | null>(null);
 
   const totals = useMemo(() => {
     const active = transactions.filter((item) => item.status !== 'cancelado');
@@ -97,6 +99,12 @@ export function FinanceManager({ initialTransactions, events }: { initialTransac
     }
   }
 
+  function printReceipt(item: FinancialTransaction) {
+    if (item.type !== 'receita' || item.status !== 'pago') return;
+    setReceipt(item);
+    window.setTimeout(() => window.print(), 100);
+  }
+
   async function handleDelete(item: FinancialTransaction) {
     if (!window.confirm(`Excluir o lançamento "${item.description}"?`)) return;
     try {
@@ -142,12 +150,34 @@ export function FinanceManager({ initialTransactions, events }: { initialTransac
               <div className="min-w-0 flex-1"><p className="font-semibold">{item.description}</p><p className="mt-1 text-xs text-[var(--muted-foreground)]">{item.category} · {dateBR(item.due_date)}{item.event_id ? ' · evento vinculado' : ''}</p></div>
               <span className={`w-fit rounded-full px-2.5 py-1 text-[10px] font-bold ${item.status === 'pago' ? 'bg-[var(--success-soft)] text-[var(--success)]' : item.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : 'bg-[var(--warning-soft)] text-[var(--warning)]'}`}>{statusLabel[item.status]}</span>
               <p className={`min-w-32 text-left font-bold sm:text-right ${item.type === 'receita' ? 'text-[var(--secondary)]' : 'text-[var(--warning)]'}`}>{item.type === 'receita' ? '+' : '−'} {money(Number(item.amount))}</p>
-              <div className="flex gap-1"><button onClick={() => openEdit(item)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button onClick={() => handleDelete(item)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
+              <div className="flex gap-1">{item.type === 'receita' && item.status === 'pago' && <button title="Gerar recibo" onClick={() => printReceipt(item)} className="rounded-lg p-2 text-[var(--secondary)] hover:bg-[var(--secondary-soft)]"><Printer size={16} /></button>}<button title="Editar" onClick={() => openEdit(item)} className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={16} /></button><button title="Excluir" onClick={() => handleDelete(item)} className="rounded-lg p-2 text-[var(--danger)] hover:bg-[var(--danger-soft)]"><Trash2 size={16} /></button></div>
             </div>
           ))}
           {!visible.length && <div className="px-6 py-12 text-center text-sm text-[var(--muted)]">Nenhum lançamento encontrado.</div>}
         </div>
       </section>
+
+      {receipt && (
+        <div className="print-receipt hidden bg-white text-black">
+          <div className="mx-auto max-w-2xl border border-slate-300 p-10">
+            <div className="border-b border-slate-300 pb-6">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">RECIBO DE PAGAMENTO</p>
+              <h1 className="mt-2 text-3xl font-bold">{company?.trade_name || company?.legal_name || 'Tia Sol'}</h1>
+              {company?.tax_id && <p className="mt-1 text-sm text-slate-600">CNPJ/CPF: {company.tax_id}</p>}
+            </div>
+            <div className="mt-8 space-y-5 text-sm">
+              <p>Recebemos o valor de <strong>{money(Number(receipt.amount))}</strong>, referente a <strong>{receipt.description}</strong>.</p>
+              <div className="grid gap-4 rounded-xl bg-slate-50 p-5 sm:grid-cols-2">
+                <div><p className="text-xs text-slate-500">Data do pagamento</p><p className="mt-1 font-semibold">{receipt.paid_at ? new Intl.DateTimeFormat('pt-BR').format(new Date(receipt.paid_at)) : dateBR(receipt.due_date)}</p></div>
+                <div><p className="text-xs text-slate-500">Categoria</p><p className="mt-1 font-semibold">{receipt.category}</p></div>
+              </div>
+              {receipt.notes && <p className="rounded-xl border border-slate-200 p-4"><strong>Observações:</strong> {receipt.notes}</p>}
+              <p className="pt-8 text-sm text-slate-600">Declaro, para os devidos fins, que o valor acima foi recebido integralmente.</p>
+            </div>
+            <div className="mt-20 border-t border-slate-400 pt-2 text-center text-xs text-slate-600">Responsável</div>
+          </div>
+        </div>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/35 p-0 sm:items-center sm:p-5">
@@ -172,7 +202,7 @@ export function FinanceManager({ initialTransactions, events }: { initialTransac
   );
 }
 
-function Kpi({ icon, label, value, helper, tone }: { icon: React.ReactNode; label: string; value: string; helper: string; tone: 'pink' | 'yellow' | 'teal' | 'neutral' }) {
+function Kpi({ icon, label, value, helper, tone }: { icon: ReactNode; label: string; value: string; helper: string; tone: 'pink' | 'yellow' | 'teal' | 'neutral' }) {
   const classes = {
     pink: 'bg-[var(--primary-soft)] text-[var(--primary)]',
     yellow: 'bg-[var(--accent-soft)] text-[var(--warning)]',
