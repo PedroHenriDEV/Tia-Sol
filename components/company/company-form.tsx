@@ -3,25 +3,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoaderCircle, Save } from 'lucide-react';
+import { Building2, CreditCard, FileText, LoaderCircle, MapPin, Save, Wallet, MessageCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { companySchema, type CompanyInput } from '@/validators/company';
 import { saveMyCompany } from '@/services/company';
 import type { Company } from '@/types/database';
 import { Logo } from '@/components/ui/logo';
 
-const fields = [
-  ['legal_name', 'Nome da empresa *'],
-  ['trade_name', 'Nome comercial'],
-  ['tax_id', 'CPF/CNPJ'],
-  ['phone', 'Telefone'],
-  ['whatsapp', 'WhatsApp'],
-  ['email', 'E-mail'],
-  ['address', 'Endereço'],
-  ['city', 'Cidade'],
-  ['state', 'Estado'],
-  ['pix_key', 'Chave PIX'],
-] as const;
+const fieldClass = 'input mt-2';
 
 export function CompanyForm({ company }: { company: Company | null }) {
   const router = useRouter();
@@ -63,76 +52,33 @@ export function CompanyForm({ company }: { company: Company | null }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <section aria-labelledby="company-data-heading">
-        <div className="mb-5 border-b border-[var(--border)] pb-3">
-          <h2 id="company-data-heading" className="text-base font-semibold text-[var(--foreground)]">Dados da empresa</h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">Informações de contato e localização.</p>
-        </div>
-        <div className="grid gap-x-5 gap-y-4 md:grid-cols-2">
-          {fields.map(([name, label]) => (
-            <label key={name} className={name === 'address' ? 'md:col-span-2' : 'block'}>
-              <span className="text-sm font-medium text-[var(--foreground)]">{label}</span>
-              <input {...register(name)} maxLength={name === 'state' ? 2 : undefined} className="input mt-2" />
-              {errors[name] && <span className="mt-1 block text-xs text-[var(--danger)]">{errors[name]?.message}</span>}
-            </label>
-          ))}
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
+        <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)]"><Building2 size={19}/></span><div><h2 className="text-base font-semibold text-[var(--foreground)]">Identificação</h2><p className="mt-1 text-xs text-[var(--muted)]">Dados que aparecerão nos contratos e documentos.</p></div></div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {([['legal_name','Nome da empresa / responsável *'],['trade_name','Nome comercial'],['tax_id','CPF ou CNPJ'],['email','E-mail'],['phone','Telefone'],['whatsapp','WhatsApp']] as const).map(([name,label]) => <label key={name} className="block"><span className="text-sm font-medium">{label}</span><input {...register(name)} className={fieldClass} placeholder={name==='legal_name' ? 'Ex.: Tia Sol Recreação' : undefined}/>{errors[name] && <span className="mt-1 block text-xs text-[var(--danger)]">{errors[name]?.message}</span>}</label>)}
         </div>
       </section>
 
-      <section aria-labelledby="company-details-heading">
-        <div className="mb-5 border-b border-[var(--border)] pb-3">
-          <h2 id="company-details-heading" className="text-base font-semibold text-[var(--foreground)]">Informações complementares</h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">Dados usados na apresentação e nos documentos da empresa.</p>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2">
-          <label className="block">
-            <span className="text-sm font-medium text-[var(--foreground)]">Descrição</span>
-            <textarea {...register('description')} className="input mt-2 min-h-28 resize-y" />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-[var(--foreground)]">Dados para contrato</span>
-            <textarea {...register('contract_details')} className="input mt-2 min-h-28 resize-y" />
-          </label>
-
-          <label className="block md:col-span-2">
-            <span className="text-sm font-medium text-[var(--foreground)]">Dados bancários</span>
-            <textarea {...register('bank_details')} className="input mt-2 min-h-24 resize-y" />
-          </label>
-        </div>
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
+        <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--secondary-soft)] text-[var(--secondary)]"><MapPin size={19}/></span><div><h2 className="text-base font-semibold">Endereço</h2><p className="mt-1 text-xs text-[var(--muted)]">Informações de localização da contratada.</p></div></div>
+        <div className="grid gap-4 md:grid-cols-2"><label className="block md:col-span-2"><span className="text-sm font-medium">Endereço completo</span><input {...register('address')} className={fieldClass} placeholder="Rua, número, complemento e bairro"/></label><label className="block"><span className="text-sm font-medium">Cidade</span><input {...register('city')} className={fieldClass}/></label><label className="block"><span className="text-sm font-medium">Estado (UF)</span><input {...register('state')} maxLength={2} className={fieldClass} placeholder="SP"/></label></div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="border-t border-[var(--border)] pt-4">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">Identidade visual</h2>
-          <div className="mt-4">
-            <Logo variant="header" linked={false} />
-          </div>
-          <p className="mt-3 text-xs leading-5 text-[var(--muted)]">
-            A marca Tia Sol está aplicada na navegação. O envio ou a troca de arquivos de logo não está disponível neste formulário.
-          </p>
-        </div>
-
-        <div className="border-t border-[var(--border)] pt-4">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">Preferências</h2>
-          <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-            Esta tela mantém as preferências atuais do sistema. Nenhuma configuração adicional é alterada aqui.
-          </p>
-        </div>
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
+        <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--success-soft)] text-[var(--success)]"><CreditCard size={19}/></span><div><h2 className="text-base font-semibold">Recebimentos</h2><p className="mt-1 text-xs text-[var(--muted)]">Dados usados para facilitar cobranças e contratos.</p></div></div>
+        <div className="grid gap-4 md:grid-cols-2"><label className="block"><span className="text-sm font-medium">Chave PIX</span><input {...register('pix_key')} className={fieldClass} placeholder="CPF, CNPJ, e-mail, telefone ou chave aleatória"/></label><label className="block"><span className="text-sm font-medium">Dados bancários</span><textarea {...register('bank_details')} className="input mt-2 min-h-24 resize-y" placeholder="Banco, agência, conta e titular (opcional)"/></label></div>
       </section>
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-[var(--border)] pt-5">
-        <button disabled={isSubmitting} className="button-primary">
-          {isSubmitting ? <LoaderCircle className="animate-spin" size={18} /> : <Save size={18} />}
-          Salvar configurações
-        </button>
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
+        <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--warning)]"><FileText size={19}/></span><div><h2 className="text-base font-semibold">Contratos</h2><p className="mt-1 text-xs text-[var(--muted)]">Informações padrão inseridas na geração dos contratos.</p></div></div>
+        <label className="block"><span className="text-sm font-medium">Dados e informações padrão do contrato</span><textarea {...register('contract_details')} className="input mt-2 min-h-40 resize-y" placeholder="Ex.: condições de pagamento, cancelamento, remarcação, responsabilidades, observações e demais cláusulas padrão."/></label>
+      </section>
 
-        {message && (
-          <p role="status" className={`text-sm ${message.includes('sucesso') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
-            {message}
-          </p>
-        )}
-      </div>
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
+        <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--muted)]/30 text-[var(--foreground)]"><MessageCircle size={19}/></span><div><h2 className="text-base font-semibold">Apresentação</h2><p className="mt-1 text-xs text-[var(--muted)]">Descrição utilizada quando o sistema precisar apresentar a recreação.</p></div></div>
+        <textarea {...register('description')} className="input min-h-28 resize-y" placeholder="Ex.: Recreação infantil, festas, oficinas e atividades para eventos."/>
+      </section>
+
+      <div className="flex flex-wrap items-center gap-4 border-t border-[var(--border)] pt-5"><button disabled={isSubmitting} className="button-primary">{isSubmitting ? <LoaderCircle className="animate-spin" size={18}/> : <Save size={18}/>} Salvar configurações</button>{message && <p role="status" className={`text-sm ${message.includes('sucesso') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{message}</p>}</div>
     </form>
-  );
-}
+  );}
