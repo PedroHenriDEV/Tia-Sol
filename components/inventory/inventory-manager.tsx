@@ -32,6 +32,7 @@ const emptyMaterial = {
   name: '',
   category: 'Geral',
   unit: 'unidade',
+  quantity: '0',
   minimum_quantity: '0',
   unit_cost: '0',
   location: '',
@@ -134,6 +135,7 @@ export function InventoryManager({
             name: item.name,
             category: item.category,
             unit: item.unit,
+            quantity: String(item.quantity),
             minimum_quantity: String(item.minimum_quantity),
             unit_cost: String(item.unit_cost),
             location: item.location ?? '',
@@ -169,6 +171,7 @@ export function InventoryManager({
     try {
       const input = {
         ...materialForm,
+        quantity: Number(materialForm.quantity),
         minimum_quantity: Number(materialForm.minimum_quantity),
         unit_cost: Number(materialForm.unit_cost),
       };
@@ -270,10 +273,10 @@ export function InventoryManager({
 
         <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <SummaryCard icon={<Boxes size={18} />} label="Materiais" value={number(stats.total)} />
-          <SummaryCard icon={<Package size={18} />} label="Disponível" value={number(stats.available)} />
+          <SummaryCard icon={<Package size={18} />} label="Itens em estoque" value={number(stats.available)} />
           <SummaryCard
             icon={<CircleAlert size={18} />}
-            label="Precisam comprar"
+            label="Abaixo do mínimo"
             value={number(stats.needsPurchase.length)}
             alert={stats.needsPurchase.length > 0}
           />
@@ -574,6 +577,18 @@ export function InventoryManager({
       {modal === 'material' && (
         <Modal title={editing ? 'Editar material' : 'Novo material'} onClose={() => setModal(null)}>
           <form onSubmit={saveMaterial} className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl bg-[var(--background)] p-4 sm:col-span-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Saldo inicial</p>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">Informe quanto você já tem deste material. Depois do cadastro, o saldo deve ser alterado por entradas e saídas.</p>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Field label="Quanto tenho agora *">
+                  <input type="number" min="0" step="0.01" className="input" value={materialForm.quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, quantity: e.target.value }))} />
+                </Field>
+                <Field label="Estoque mínimo *">
+                  <input type="number" min="0" step="0.01" className="input" value={materialForm.minimum_quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, minimum_quantity: e.target.value }))} />
+                </Field>
+              </div>
+            </div>
             <Field label="Nome *" className="sm:col-span-2">
               <input className="input" value={materialForm.name} onChange={(e) => setMaterialForm((f) => ({ ...f, name: e.target.value }))} placeholder="Ex.: Balões coloridos" />
             </Field>
@@ -582,9 +597,6 @@ export function InventoryManager({
             </Field>
             <Field label="Unidade">
               <input className="input" value={materialForm.unit} onChange={(e) => setMaterialForm((f) => ({ ...f, unit: e.target.value }))} placeholder="unidade, caixa, pacote..." />
-            </Field>
-            <Field label="Estoque mínimo">
-              <input type="number" min="0" step="0.01" className="input" value={materialForm.minimum_quantity} onChange={(e) => setMaterialForm((f) => ({ ...f, minimum_quantity: e.target.value }))} />
             </Field>
             <Field label="Custo unitário">
               <input type="number" min="0" step="0.01" className="input" value={materialForm.unit_cost} onChange={(e) => setMaterialForm((f) => ({ ...f, unit_cost: e.target.value }))} />
