@@ -8,7 +8,7 @@ import { Logo } from '@/components/ui/logo';
 const groups = [
   { label: 'DIA A DIA', items: [['/dashboard', 'Visão geral', LayoutDashboard], ['/agenda', 'Agenda', CalendarDays]] },
   { label: 'FESTAS', items: [['/em-breve/eventos', 'Eventos', PartyPopper], ['/clientes', 'Clientes', Users], ['/pacotes', 'Pacotes', Package]] },
-  { label: 'ADMINISTRAÇÃO', items: [['/em-breve/financeiro', 'Financeiro', ChartNoAxesCombined], ['/em-breve/contratos', 'Contratos', FileSignature]] },
+  { label: 'ADMINISTRAÇÃO', items: [['/financeiro', 'Financeiro', ChartNoAxesCombined], ['/em-breve/contratos', 'Contratos', FileSignature]] },
 ] as const;
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
