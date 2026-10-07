@@ -751,7 +751,7 @@ function MovementList({
 
 function EmptyState({ icon, title, text, success = false }: { icon: ReactNode; title: string; text: string; success?: boolean }) {
   return (
-    <div className={'rounded-2xl p-6 text-center ' + (success ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--background)] text-[var(--muted-foreground)]')'}>
+    <div className={'rounded-2xl p-6 text-center ' + (success ? 'bg-[var(--success-soft)] text-[var(--success)]' : 'bg-[var(--background)] text-[var(--muted-foreground)]'}>
       <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white">{icon}</div>
       <p className="mt-3 text-sm font-semibold">{title}</p>
       <p className="mt-1 text-xs">{text}</p>
