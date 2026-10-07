@@ -18,7 +18,7 @@ type Props = {
 };
 
 const metrics = [
-  { icon: CalendarRange, label: 'Eventos próximos', tone: 'primary' },
+  { icon: CalendarRange, label: 'Eventos próximos', value: null, note: null, tone: 'primary' },
   { icon: Users, label: 'Clientes ativos', value: '—', note: 'Dados reais do cadastro', tone: 'secondary' },
   { icon: Package, label: 'Pacotes ativos', value: '—', note: 'Seu catálogo de recreação', tone: 'accent' },
   { icon: Wallet, label: 'A receber', value: '—', note: 'Valores dos eventos', tone: 'success' },
@@ -79,7 +79,7 @@ export function Dashboard({ events }: Props) {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map(({ icon: Icon, label, tone, value = label === 'Eventos próximos' ? String(upcoming.length) : '—', note = label === 'Eventos próximos' ? 'Eventos ativos cadastrados' : undefined }) => (
+        {metrics.map(({ icon: Icon, label, tone, value, note }) => (
           <div key={label} className="group rounded-[18px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-hover)]">
             <div className="flex items-center justify-between">
               <span className={"grid h-10 w-10 place-items-center rounded-full " + metricTone(tone)}>
@@ -88,8 +88,8 @@ export function Dashboard({ events }: Props) {
               <ArrowRight size={16} className="text-[var(--muted)] transition group-hover:translate-x-1" />
             </div>
             <p className="mt-6 text-xs font-semibold text-[var(--muted-foreground)]">{label}</p>
-            <p className="display-title mt-1 text-3xl">{value}</p>
-            <p className="mt-1 text-[11px] leading-5 text-[var(--muted)]">{note}</p>
+            <p className="display-title mt-1 text-3xl">{label === 'Eventos próximos' ? String(upcoming.length) : value}</p>
+            <p className="mt-1 text-[11px] leading-5 text-[var(--muted)]">{label === 'Eventos próximos' ? 'Eventos ativos cadastrados' : note}</p>
           </div>
         ))}
       </section>
