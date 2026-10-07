@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { CalendarDays, CheckCircle2, Clock3, Pencil, Plus, Search, Trash2, X, Bell } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Clock3, Eye, Pencil, Plus, Search, Trash2, X, Bell } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventRecord } from '@/types/event';
@@ -184,6 +184,7 @@ export function EventManager({ initialEvents, clients, packages }: Props) {
                   </div>
                   <div className="flex flex-wrap items-center gap-3 lg:justify-end">
                     <div className="text-left lg:text-right"><p className="text-xs text-slate-400">Total</p><p className="font-semibold text-slate-900">{money(event.total_amount)}</p>{balance > 0 && <p className="text-xs text-amber-600">Saldo {money(balance)}</p>}</div>
+                    <Link href={`/eventos/${event.id}`} title="Central do evento" className="inline-flex items-center gap-2 rounded-lg border border-pink-100 bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-700 hover:bg-pink-100"><Eye size={15} /> Central</Link>
                     <button onClick={() => openEdit(event)} title="Editar" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"><Pencil size={17} /></button>
                     <button onClick={() => remove(event)} title="Excluir" className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600"><Trash2 size={17} /></button>
                   </div>
