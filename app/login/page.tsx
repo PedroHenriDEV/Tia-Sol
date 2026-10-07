@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/login-form';
 import { Logo } from '@/components/ui/logo';
+import Link from 'next/link';
 
 export default function LoginPage() {
   return (
@@ -24,6 +25,10 @@ export default function LoginPage() {
             <h2 className="display-title mt-2 text-3xl">Bem-vinda de volta.</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">Entre para continuar organizando suas festas.</p>
             <div className="mt-7"><Suspense><LoginForm /></Suspense></div>
+            <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
+              <p className="text-xs text-[var(--muted)]">Primeiro acesso?</p>
+              <Link href="/cadastro" className="mt-1 inline-block text-sm font-semibold text-[var(--primary)]">Criar usuário e senha</Link>
+            </div>
           </div>
           <p className="mt-5 text-center text-[11px] text-[var(--muted)]">Seu espaço de organização para a Tia Sol.</p>
         </div>
