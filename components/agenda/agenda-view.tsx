@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X, Clock, Bell } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, MapPin, Pencil, Plus, Trash2, X, Clock, Bell, Eye, CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventInput } from '@/validators/event';
 import type { EventRecord, EventStatus } from '@/types/event';
@@ -63,6 +63,18 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
     for (const cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) result.push(new Date(cursor));
     return result;
   }, [month]);
+
+  const operational = useMemo(() => {
+    const todayKey = dateKey(new Date());
+    const active = events.filter((event) => event.status !== 'cancelado' && event.status !== 'finalizado');
+    const today = active.filter((event) => event.event_date === todayKey).sort((a, b) => a.start_time.localeCompare(b.start_time));
+    const upcoming = active
+      .filter((event) => event.event_date > todayKey)
+      .sort((a, b) => (a.event_date + a.start_time).localeCompare(b.event_date + b.start_time))
+      .slice(0, 6);
+    const pending = active.filter((event) => ['orcamento', 'aguardando_confirmacao'].includes(event.status));
+    return { today, upcoming, pending };
+  }, [events]);
 
   const byDate = useMemo(() => {
     const map = new Map<string, EventRecord[]>();
@@ -154,8 +166,80 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
           <h1 className="display-title mt-1 text-3xl sm:text-4xl">Agenda</h1>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">Organize suas festas e compromissos em um só lugar.</p>
         </div>
-        <button onClick={() => openCreate(dateKey(new Date()))} className="button-primary"><Plus size={17} /> Novo evento</button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => openCreate(dateKey(new Date()))} className="button-primary"><Plus size={17} /> Novo evento</button>
+        </div>
       </div>
+
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="section-label">OPERAÇÃO</p>
+            <h2 className="display-title mt-1 text-2xl">Agenda operacional</h2>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Veja o que precisa ser acompanhado hoje e nos próximos eventos.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Hoje</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)]"><CalendarDays size={17} /></span></div>
+            <p className="mt-3 text-2xl font-semibold">{operational.today.length}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">{operational.today.length === 1 ? 'evento programado' : 'eventos programados'}</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Próximos</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--secondary-soft)] text-[var(--secondary)]"><Clock size={17} /></span></div>
+            <p className="mt-3 text-2xl font-semibold">{operational.upcoming.length}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">eventos já agendados</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-[var(--muted)]">Pendências</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-amber-50 text-amber-600"><AlertTriangle size={17} /></span></div>
+            <p className="mt-3 text-2xl font-semibold">{operational.pending.length}</p>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">aguardando confirmação/orçamento</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4">
+              <div><p className="text-sm font-semibold">Hoje</p><p className="text-xs text-[var(--muted-foreground)]">Compromissos em ordem de horário</p></div>
+              <span className="rounded-full bg-[var(--primary-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--primary)]">{operational.today.length}</span>
+            </div>
+            <div className="divide-y divide-[var(--border)]">
+              {operational.today.length === 0 ? (
+                <div className="px-4 py-8 text-center text-sm text-[var(--muted-foreground)]"><CheckCircle2 className="mx-auto mb-2 text-emerald-500" size={20} />Nenhum evento programado para hoje.</div>
+              ) : operational.today.map((event) => (
+                <div key={event.id} className="flex items-center gap-3 p-4">
+                  <div className="w-16 shrink-0 text-center"><p className="text-sm font-bold">{event.start_time.slice(0,5)}</p><p className="text-[10px] text-[var(--muted)]">{event.end_time.slice(0,5)}</p></div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{event.title}</p><p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}{event.location ? ` · ${event.location}` : ''}</p></div>
+                  <a href={`/eventos/${event.id}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central"><Eye size={16} /></a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)]">
+            <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4">
+              <div><p className="text-sm font-semibold">Próximos eventos</p><p className="text-xs text-[var(--muted-foreground)]">O que vem pela frente</p></div>
+              <span className="rounded-full bg-[var(--secondary-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--secondary)]">{operational.upcoming.length}</span>
+            </div>
+            <div className="divide-y divide-[var(--border)]">
+              {operational.upcoming.length === 0 ? (
+                <div className="px-4 py-8 text-center text-sm text-[var(--muted-foreground)]">Nenhum próximo evento cadastrado.</div>
+              ) : operational.upcoming.map((event) => {
+                const urgency = getEventUrgency(event.event_date);
+                return (
+                  <div key={event.id} className="flex items-center gap-3 p-4">
+                    <div className="w-20 shrink-0 rounded-xl bg-[var(--background)] p-2 text-center"><p className="text-xs font-bold">{formatDate(event.event_date)}</p><p className="mt-1 text-[10px] text-[var(--muted)]">{event.start_time.slice(0,5)}</p></div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{event.title}</p><p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}</p></div>
+                    <span className={"hidden rounded-full px-2 py-1 text-[10px] font-bold sm:inline-flex " + urgency.className}>{urgency.label}</span>
+                    <a href={`/eventos/${event.id}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central"><Eye size={16} /></a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)] overflow-hidden">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4 sm:px-6">
