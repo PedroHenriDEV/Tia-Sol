@@ -46,6 +46,7 @@ export async function createMaterial(
       name: input.name.trim(),
       category: input.category.trim(),
       unit: input.unit.trim(),
+      quantity: Number(input.quantity ?? 0),
       minimum_quantity: Number(input.minimum_quantity),
       unit_cost: Number(input.unit_cost),
       location: input.location?.trim() || null,
