@@ -23,13 +23,18 @@ export function Dashboard({ events, clients, packages, transactions, materials }
   const urgent = upcoming.filter(e => getEventUrgency(e.event_date).reminder).slice(0, 3);
   const received = transactions.filter(t => t.type === 'receita' && t.status === 'pago').reduce((s, t) => s + Number(t.amount), 0);
   const pending = transactions.filter(t => t.type === 'receita' && t.status === 'pendente').reduce((s, t) => s + Number(t.amount), 0);
-  const monthRevenue = transactions.filter(t => t.type === 'receita' && t.status !== 'cancelado' && t.due_date.startsWith(month)).reduce((s, t) => s + Number(t.amount), 0);
+  const monthRevenue = transactions.filter(t => t.type === 'receita' && t.status === 'pago' && (t.paid_at?.startsWith(month) || t.due_date.startsWith(month))).reduce((s, t) => s + Number(t.amount), 0);
+  const monthExpenses = transactions.filter(t => t.type === 'despesa' && t.status === 'pago' && (t.paid_at?.startsWith(month) || t.due_date.startsWith(month))).reduce((s, t) => s + Number(t.amount), 0);
+  const monthResult = monthRevenue - monthExpenses;
+  const monthEvents = events.filter(e => e.event_date.startsWith(month) && e.status !== 'cancelado').length;
+  const unsignedContracts = events.filter(e => e.status === 'contrato_gerado').length;
   const lowStock = materials.filter(m => Number(m.quantity) <= Number(m.minimum_quantity));
   const metrics = [
     [CalendarRange, 'Próximos eventos', String(upcoming.length), 'Compromissos futuros', 'primary', '/eventos'],
     [Users, 'Clientes ativos', String(clients.filter(c => c.active).length), 'Cadastros ativos', 'secondary', '/clientes'],
     [Package, 'Pacotes ativos', String(packages.filter(p => p.active).length), 'Experiências disponíveis', 'accent', '/pacotes'],
     [Wallet, 'A receber', money(pending), 'Receitas pendentes', 'success', '/financeiro'],
+    [CalendarDays, 'Eventos no mês', String(monthEvents), 'Eventos programados', 'primary', '/agenda'],
   ] as const;
 
   return <div className="space-y-6 lg:space-y-8">
@@ -46,6 +51,12 @@ export function Dashboard({ events, clients, packages, transactions, materials }
         <div className="flex items-center justify-between"><span className={`grid h-10 w-10 place-items-center rounded-full ${tone(t)}`}><Icon size={18}/></span><ArrowRight size={16} className="text-[var(--muted)] transition group-hover:translate-x-1"/></div>
         <p className="mt-5 text-xs font-semibold text-[var(--muted-foreground)]">{label}</p><p className="display-title mt-1 text-2xl sm:text-3xl">{value}</p><p className="mt-1 text-[11px] text-[var(--muted)]">{note}</p>
       </Link>)}
+    </section>
+
+    <section className="grid gap-3 sm:grid-cols-3">
+      <Link href="/relatorios" className="rounded-[18px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"><p className="text-xs font-semibold text-[var(--muted-foreground)]">Resultado do mês</p><p className={`mt-1 text-xl font-bold ${monthResult >= 0 ? 'text-[var(--success)]' : 'text-red-600'}`}>{money(monthResult)}</p><p className="mt-1 text-[11px] text-[var(--muted)]">Receitas menos despesas pagas</p></Link>
+      <Link href="/contratos" className="rounded-[18px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"><p className="text-xs font-semibold text-[var(--muted-foreground)]">Contratos pendentes</p><p className="mt-1 text-xl font-bold text-amber-600">{unsignedContracts}</p><p className="mt-1 text-[11px] text-[var(--muted)]">Aguardando assinatura</p></Link>
+      <Link href="/relatorios" className="rounded-[18px] border border-[var(--border)] bg-[var(--card)] p-4 shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"><p className="text-xs font-semibold text-[var(--muted-foreground)]">Total recebido</p><p className="mt-1 text-xl font-bold text-[var(--success)]">{money(received)}</p><p className="mt-1 text-[11px] text-[var(--muted)]">Receitas pagas registradas</p></Link>
     </section>
 
     {urgent.length > 0 && <section className="rounded-[20px] border border-red-200 bg-red-50 p-4 sm:p-5">
@@ -97,7 +108,7 @@ export function Dashboard({ events, clients, packages, transactions, materials }
 
     <section className="grid gap-5 lg:grid-cols-2">
       <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)]"><div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 sm:px-6"><div><p className="section-label">Estoque</p><h2 className="display-title mt-1 text-2xl">Materiais em atenção</h2></div><Link href="/estoque" className="text-xs font-bold text-[var(--primary)]">Ver estoque</Link></div><div className="p-5 sm:p-6">{lowStock.length ? <div className="space-y-2">{lowStock.slice(0,4).map(m => <Link key={m.id} href="/estoque" className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3"><Package size={17} className="text-amber-700"/><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{m.name}</p><p className="text-xs text-amber-700">{m.quantity} {m.unit} · mínimo {m.minimum_quantity}</p></div><ArrowRight size={14} className="text-amber-700"/></Link>)}</div> : <div className="rounded-xl border border-[var(--border)] p-4 text-sm text-[var(--muted-foreground)]"><CheckCircle2 size={18} className="mb-2 text-[var(--success)]"/>Nenhum material abaixo do mínimo.</div>}</div></div>
-      <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6"><p className="section-label">Acesso rápido</p><h2 className="display-title mt-1 text-2xl">O que fazer agora?</h2><div className="mt-4 grid gap-2 sm:grid-cols-2"><Link href="/eventos" className="button-primary justify-center"><CalendarDays size={16}/> Novo evento</Link><Link href="/clientes" className="button-secondary justify-center"><Users size={16}/> Novo cliente</Link><Link href="/pacotes" className="button-secondary justify-center"><Package size={16}/> Novo pacote</Link><Link href="/financeiro" className="button-secondary justify-center"><Wallet size={16}/> Financeiro</Link></div></div>
+      <div className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6"><p className="section-label">Acesso rápido</p><h2 className="display-title mt-1 text-2xl">O que fazer agora?</h2><div className="mt-4 grid gap-2 sm:grid-cols-2"><Link href="/eventos" className="button-primary justify-center"><CalendarDays size={16}/> Novo evento</Link><Link href="/clientes" className="button-secondary justify-center"><Users size={16}/> Novo cliente</Link><Link href="/pacotes" className="button-secondary justify-center"><Package size={16}/> Novo pacote</Link><Link href="/financeiro" className="button-secondary justify-center"><Wallet size={16}/> Financeiro</Link><Link href="/relatorios" className="button-secondary justify-center"><CalendarRange size={16}/> Relatórios</Link><Link href="/contratos" className="button-secondary justify-center"><FileSignature size={16}/> Contratos</Link></div></div>
     </section>
   </div>;
 }
