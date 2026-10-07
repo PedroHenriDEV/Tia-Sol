@@ -211,7 +211,7 @@ export function InventoryManager({
         reason: movementForm.reason,
       };
 
-      const isPurchase = input.type === 'entrada' && Boolean(input.unit_cost) && input.unit_cost > 0 && movementForm.reason.toLocaleLowerCase().includes('compra');
+      const isPurchase = input.type === 'entrada' && typeof input.unit_cost === 'number' && input.unit_cost > 0 && movementForm.reason.toLocaleLowerCase().includes('compra');
       const saved = isPurchase
         ? await registerMaterialPurchase(createClient(), {
             material_id: input.material_id,
