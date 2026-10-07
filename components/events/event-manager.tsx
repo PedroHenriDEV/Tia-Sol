@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { CalendarDays, CheckCircle2, Clock3, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { Client, Package } from '@/types/database';
 import type { EventRecord } from '@/types/event';
 import { eventSchema, type EventInput } from '@/validators/event';
@@ -46,6 +47,12 @@ export function EventManager({ initialEvents, clients, packages }: Props) {
     const pending = active.filter((event) => event.received_amount < event.total_amount);
     return { active: active.length, confirmed: confirmed.length, pending: pending.length };
   }, [events]);
+
+  const statCards: Array<[string, number, LucideIcon]> = [
+    ['Eventos ativos', stats.active, CalendarDays],
+    ['Confirmados', stats.confirmed, CheckCircle2],
+    ['Com saldo', stats.pending, Clock3],
+  ];
 
   const filtered = useMemo(() => {
     const normalized = query.toLowerCase().trim();
@@ -136,8 +143,8 @@ export function EventManager({ initialEvents, clients, packages }: Props) {
           ['Com saldo', stats.pending, Clock3],
         ].map(([label, value, Icon]) => (
           <div key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between"><span className="text-sm text-slate-500">{String(label)}</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-pink-50 text-pink-600"><Icon size={17} /></span></div>
-            <p className="mt-3 text-2xl font-semibold text-slate-900">{String(value)}</p>
+            <div className="flex items-center justify-between"><span className="text-sm text-slate-500">{label}</span><span className="grid h-9 w-9 place-items-center rounded-xl bg-pink-50 text-pink-600"><Icon size={17} /></span></div>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">{value}</p>
           </div>
         ))}
       </div>
