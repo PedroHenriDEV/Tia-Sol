@@ -16,20 +16,17 @@ export async function getMyProfile(supabase: SupabaseClient): Promise<UserProfil
 
 export async function updateMyProfile(
   supabase: SupabaseClient,
-  input: { full_name: string; avatar_path?: string | null },
+  input: { full_name?: string; avatar_path?: string | null },
 ) {
   const { data: userData, error: authError } = await supabase.auth.getUser();
   if (authError) throw authError;
   if (!userData.user) throw new Error('Usuário não autenticado.');
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      full_name: input.full_name.trim() || null,
-      ...(input.avatar_path !== undefined ? { avatar_path: input.avatar_path } : {}),
-    })
-    .eq('id', userData.user.id);
+  const updates: Record<string, string | null> = {};
+  if (input.full_name !== undefined) updates.full_name = input.full_name.trim() || null;
+  if (input.avatar_path !== undefined) updates.avatar_path = input.avatar_path;
 
+  const { error } = await supabase.from('users').update(updates).eq('id', userData.user.id);
   if (error) throw error;
 }
 
@@ -50,11 +47,11 @@ export async function uploadMyAvatar(supabase: SupabaseClient, file: File) {
 
   const { error } = await supabase.storage
     .from('user-assets')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: true, contentType: file.type, cacheControl: '3600' });
 
   if (error) throw error;
 
-  await updateMyProfile(supabase, { full_name: '', avatar_path: path });
+  await updateMyProfile(supabase, { avatar_path: path });
   return path;
 }
 
