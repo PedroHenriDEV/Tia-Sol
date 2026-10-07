@@ -4,6 +4,7 @@ export const materialSchema = z.object({
   name: z.string().trim().min(2, 'Informe o nome do material.').max(180),
   category: z.string().trim().min(2, 'Informe a categoria.').max(100),
   unit: z.string().trim().min(1, 'Informe a unidade.').max(30),
+  quantity: z.coerce.number().min(0, 'A quantidade atual não pode ser negativa.').default(0),
   minimum_quantity: z.coerce.number().min(0, 'O estoque mínimo não pode ser negativo.'),
   unit_cost: z.coerce.number().min(0, 'O custo não pode ser negativo.'),
   location: z.string().trim().max(120).optional().or(z.literal('')),
