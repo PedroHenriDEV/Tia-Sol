@@ -36,7 +36,10 @@ function cleanContractText(text: string) {
     .replace(/\\r\\n/g, '\n')
     .replace(/\\n/g, '\n')
     .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
+    .replace(/\r/g, '\n')
+    .replace(/\\bN\?\\b/g, 'Nº')
+    .replace(/(CLÁUSULA\\s+\\d+)\?/g, '$1ª')
+    .replace(/(CLÁUSULA\\s+\\d+)º/g, '$1ª');
 }
 
 function encodePdfText(text: string) {
@@ -258,24 +261,24 @@ function isContractHeading(line: string) {
 
 function ContractPreview({ text }: { text: string }) {
   return (
-    <div className="overflow-auto rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700 shadow-sm">
-      {cleanContractText(text).split('\\n').map((line, index) => {
+    <div className="overflow-auto rounded-xl border border-slate-200 bg-white p-6 text-[14px] leading-7 text-slate-700 shadow-sm">
+      {cleanContractText(text).split('\n').map((line, index) => {
         const value = line.trim();
         if (!value) return <div key={index} className="h-3" />;
         if (isContractHeading(value)) {
-          return <div key={index} className="mt-3 border-b border-slate-200 pb-1.5 text-[13px] font-bold uppercase tracking-wide text-slate-900">{value}</div>;
+          return <div key={index} className="mt-5 border-b-2 border-slate-200 pb-2 text-[14px] font-extrabold uppercase tracking-wide text-slate-950">{value}</div>;
         }
         if (/^• /.test(value)) {
           const [label, ...rest] = value.slice(2).split(':');
-          return <div key={index} className="pl-1"><strong>{label}{rest.length ? ':' : ''}</strong>{rest.length ? ` ${rest.join(':')}` : ''}</div>;
+          return <div key={index} className="pl-1"><strong className="font-bold text-slate-900">{label}{rest.length ? ':' : ''}</strong>{rest.length ? ` ${rest.join(':')}` : ''}</div>;
         }
-        if (/^\\d+\\. /.test(value)) {
-          const match = value.match(/^(\\d+\\.)(.*)$/);
-          return <div key={index} className="pl-2"><strong>{match?.[1]}</strong>{match?.[2]}</div>;
+        if (/^\d+\. /.test(value)) {
+          const match = value.match(/^(\d+\.)(.*)$/);
+          return <div key={index} className="pl-2"><strong className="font-bold text-slate-900">{match?.[1]}</strong>{match?.[2]}</div>;
         }
         if (/^SERVIÇO PRESTADO:/.test(value)) {
           const [label, ...rest] = value.split(':');
-          return <div key={index} className="mt-1 pl-1"><strong>{label}:</strong>{rest.join(':')}</div>;
+          return <div key={index} className="mt-2 pl-1"><strong className="font-bold text-slate-900">{label}:</strong>{rest.join(':')}</div>;
         }
         return <p key={index}>{value}</p>;
       })}
