@@ -79,6 +79,14 @@ function createContractPdfBlob(text: string) {
       || /^\d+\. (CONTRATANTE|CONTRATADA)$/.test(value);
   };
 
+  const isLabeledLine = (line: string) => {
+    const value = line.trim();
+    return /^•\s+[^:]+:/.test(value)
+      || /^\d+\.\s+[^:]+:/.test(value)
+      || /^SERVIÇO PRESTADO:/.test(value)
+      || /^RECREAÇÃO INFANTIL ABRANGENDO:/.test(value);
+  };
+
   const wrapLine = (line: string, maxChars: number) => {
     const trimmed = line.trim();
     if (!trimmed) return [''];
@@ -101,7 +109,7 @@ function createContractPdfBlob(text: string) {
   const styledLines: Array<{ text: string; kind: 'title' | 'heading' | 'body' }> = [];
   rawLines.forEach((line) => {
     const value = line.trim();
-    const kind = isTitle(value) ? 'title' : isHeading(value) ? 'heading' : 'body';
+    const kind = isTitle(value) ? 'title' : isHeading(value) ? 'heading' : isLabeledLine(value) ? 'heading' : 'body';
     const wrapped = wrapLine(line, kind === 'title' ? 72 : kind === 'heading' ? 82 : 92);
     wrapped.forEach((item, index) => {
       styledLines.push({ text: item, kind: index === 0 ? kind : 'body' });
@@ -269,16 +277,30 @@ function ContractPreview({ text }: { text: string }) {
           return <div key={index} className="mt-5 border-b-2 border-slate-200 pb-2 text-[14px] font-extrabold uppercase tracking-wide text-slate-950">{value}</div>;
         }
         if (/^• /.test(value)) {
-          const [label, ...rest] = value.slice(2).split(':');
-          return <div key={index} className="pl-1"><strong className="font-bold text-slate-900">{label}{rest.length ? ':' : ''}</strong>{rest.length ? ` ${rest.join(':')}` : ''}</div>;
+          const content = value.slice(2);
+          const separator = content.indexOf(':');
+          if (separator >= 0) {
+            const label = content.slice(0, separator);
+            const rest = content.slice(separator + 1);
+            return <div key={index} className="pl-1"><strong className="font-bold text-slate-950">{label}:</strong>{rest ? ` ${rest.trim()}` : ''}</div>;
+          }
+          return <div key={index} className="pl-1">{content}</div>;
         }
         if (/^\d+\. /.test(value)) {
+          const separator = value.indexOf(':');
+          if (separator >= 0) {
+            const label = value.slice(0, separator + 1);
+            const rest = value.slice(separator + 1);
+            return <div key={index} className="pl-2"><strong className="font-bold text-slate-950">{label}</strong>{rest ? ` ${rest.trim()}` : ''}</div>;
+          }
           const match = value.match(/^(\d+\.)(.*)$/);
-          return <div key={index} className="pl-2"><strong className="font-bold text-slate-900">{match?.[1]}</strong>{match?.[2]}</div>;
+          return <div key={index} className="pl-2"><strong className="font-bold text-slate-950">{match?.[1]}</strong>{match?.[2]}</div>;
         }
         if (/^SERVIÇO PRESTADO:/.test(value)) {
-          const [label, ...rest] = value.split(':');
-          return <div key={index} className="mt-2 pl-1"><strong className="font-bold text-slate-900">{label}:</strong>{rest.join(':')}</div>;
+          const separator = value.indexOf(':');
+          const label = value.slice(0, separator + 1);
+          const rest = value.slice(separator + 1);
+          return <div key={index} className="mt-2 pl-1"><strong className="font-bold text-slate-950">{label}</strong>{rest ? ` ${rest.trim()}` : ''}</div>;
         }
         return <p key={index}>{value}</p>;
       })}
@@ -366,7 +388,7 @@ CLÁUSULA 5ª – DA RETRIBUIÇÃO
 
 EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA TOTAL DE ${money(total)}, ESPECIFICADOS:
 
-1. PACOTE ${(packageName || 'CONTRATADO').toUpperCase()}: ${money(Math.max(0, total - Number(form.displacement_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
+1. PACOTE ${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: ${money(Math.max(0, total - Number(form.displacement_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
 2. TAXA DE DESLOCAMENTO: ${money(Number(form.displacement_amount || 0))}
 
 O PAGAMENTO ${Number(form.balance_amount || 0) <= 0 ? 'INTEGRAL FOI REALIZADO' : 'SERÁ REALIZADO CONFORME AS CONDIÇÕES INFORMADAS'}${form.deposit_date ? ` NA DATA DE ${dateLabel(form.deposit_date)}` : ''}.
