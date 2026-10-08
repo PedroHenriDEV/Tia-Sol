@@ -47,103 +47,116 @@ function companyName(company: Company | null) {
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
   const name = companyName(company);
   const cnpj = company?.tax_id || 'não informado';
-  const phone = company?.phone || company?.whatsapp || 'não informado';
-  const address = [company?.address, company?.city, company?.state].filter(Boolean).join(', ') || 'não informado';
-  const pix = form.pix_key || company?.pix_key || 'não informado';
-  const activities = form.included_activities.length ? form.included_activities.map((item) => '• ' + item).join('\n') : '• Conforme pacote selecionado';
-  const equipment = form.included_equipment.length ? form.included_equipment.map((item) => '• ' + item).join('\n') : '• Materiais necessários para as atividades contratadas';
-  const balance = Math.max(0, Number(form.total_amount) - Number(form.deposit_amount));
+  const companyAddress = company?.address || 'não informado';
+  const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
+  const activities = form.included_activities.length
+    ? form.included_activities.map((item, index) => `${index + 1}. ${item}`).join('\\n')
+    : '1. Conforme atividades do pacote contratado.';
+  const total = Number(form.total_amount) || 0;
+  const displacement = Math.max(0, total - Number(form.deposit_amount || 0));
+  const date = dateLabel(form.event_date);
+  const time = form.start_time && form.end_time
+    ? `às ${form.start_time}, com encerramento às ${form.end_time} (${Math.max(0, (Number(form.end_time.split(':')[0]) * 60 + Number(form.end_time.split(':')[1] || 0)) - (Number(form.start_time.split(':')[0]) * 60 + Number(form.start_time.split(':')[1] || 0))) / 60}h de duração)`
+    : `às ${form.start_time || 'horário não informado'}`;
   const today = new Intl.DateTimeFormat('pt-BR').format(new Date());
 
-  return `${name}
-CNPJ: ${cnpj} • Telefone/WhatsApp: ${phone} • ${address}
+  return `CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO
 
-CONTRATO DE PRESTAÇÃO DE SERVIÇOS Nº ${number}
+IDENTIFICAÇÃO DAS PARTES CONTRATANTES
 
-INSTRUMENTO PARTICULAR DE PRESTAÇÃO DE SERVIÇOS DE RECREAÇÃO E ANIMAÇÃO INFANTIL
+1. CONTRATANTE
+• NOME: ${form.contractor_name || 'não informado'}
+• DOCUMENTOS: CPF/CNPJ Nº ${form.contractor_document || 'não informado'}
+• RG: ${form.contractor_rg || 'não informado'}
+• ENDEREÇO: ${form.contractor_address || 'não informado'}
+• TELEFONE: ${form.contractor_phone || 'não informado'}
+• E-MAIL: ${form.contractor_email || 'não informado'}
 
-CONTRATADA: ${name}, inscrita no CNPJ sob nº ${cnpj}, com endereço em ${address}, telefone ${phone}.
+2. CONTRATADA
+• NOME: ${name}
+• ENDEREÇO: ${companyAddress}${companyCityState ? ` - ${companyCityState}` : ''}
+• CNPJ: ${cnpj}
 
-CONTRATANTE: ${form.contractor_name}, inscrito(a) no CPF/CNPJ sob nº ${form.contractor_document || 'não informado'}, RG nº ${form.contractor_rg || 'não informado'}, residente e domiciliado(a) em ${form.contractor_address || 'não informado'}, telefone/WhatsApp ${form.contractor_phone || 'não informado'}, e-mail ${form.contractor_email || 'não informado'}.
+AS PARTES TÊM ENTRE SI JUSTO E CONTRATADO A PRESTAÇÃO DE SERVIÇOS DE RECREAÇÃO INFANTIL ABAIXO DESCRITA, COM SUAS CLÁUSULAS E CONDIÇÕES A SEGUIR.
 
-As partes acima qualificadas celebram o presente contrato de prestação de serviços, regido pelas cláusulas e condições seguintes:
+CLÁUSULA 1ª - DO OBJETO
 
-CLÁUSULA 1ª – DO OBJETO DO CONTRATO
+POR MEIO DESTE CONTRATO, A CONTRATADA SE COMPROMETE A PRESTAR À CONTRATANTE OS SEGUINTES SERVIÇOS:
 
-O presente contrato tem como objeto a prestação de serviços especializados de recreação, entretenimento e animação infantil para o evento comemorativo.
-
-• Aniversariante(s): ${form.celebrant_name || 'não informado'}
-• Estimativa de crianças: ${form.children_estimate || 0}
-• Faixa etária: ${form.age_range || 'não informada'}
-• Tema do evento: ${form.event_theme || 'não informado'}
-• Pacote contratado: ${packageName || 'não informado'}
-
-CLÁUSULA 2ª – DA DATA, HORÁRIO E LOCAL DO EVENTO
-
-• Data do evento: ${dateLabel(form.event_date)}
-• Horário: das ${form.start_time || '--:--'} às ${form.end_time || '--:--'}
-• Local: ${form.event_location || 'não informado'}
-• Tipo de local: ${form.event_location_type || 'não informado'}
-
-CLÁUSULA 3ª – DA EQUIPE E ATIVIDADES INCLUSAS
-
-A CONTRATADA disponibilizará ${form.team_size} recreador(es)/animador(es), devidamente uniformizados e qualificados, fornecendo os materiais necessários para a execução das atividades abaixo:
-
+SERVIÇO PRESTADO: ${packageName || 'RECREAÇÃO INFANTIL'}
+RECREAÇÃO INFANTIL ABRANGENDO:
 ${activities}
 
-Equipamentos e materiais inclusos:
-${equipment}
+CLÁUSULA 2ª - DA FESTA
 
-CLÁUSULA 4ª – DO VALOR E FORMA DE PAGAMENTO
+• DATA E LOCAL: A FESTA OCORRERÁ NO DIA ${date} ${time}, NO ENDEREÇO: ${form.event_location || 'não informado'}.
 
-Pela execução dos serviços descritos, a CONTRATANTE pagará à CONTRATADA o valor total de ${money(Number(form.total_amount))}.
+• HORÁRIO DA RECREAÇÃO: A RECREAÇÃO TERÁ INÍCIO ÀS ${form.start_time || 'não informado'} E ENCERRARÁ ÀS ${form.end_time || 'não informado'}.
 
-a) Sinal/Reserva de Data: ${money(Number(form.deposit_amount))}${form.deposit_date ? ` pago em ${dateLabel(form.deposit_date)}` : ''}.
-b) Saldo Restante: ${money(balance)}${form.balance_due_date ? ` a ser quitado até ${dateLabel(form.balance_due_date)}` : ''}.
-c) Forma de pagamento: ${form.payment_method || 'não informada'}.
-d) Chave PIX: ${pix}.
+1. EM CASO DE ATRASO POR PARTE DO CONTRATANTE, A CONTRATADA RESERVA-SE O DIREITO DE ENCERRAR AS ATIVIDADES NO HORÁRIO PREVISTO.
 
-Condições adicionais:
-${form.additional_payment_terms || 'Não há condições adicionais informadas.'}
+2. AMPLIAÇÃO DE HORÁRIO: QUALQUER AMPLIAÇÃO DO HORÁRIO DEVERÁ SER ACORDADA PREVIAMENTE COM A CONTRATADA, SUJEITA A TAXA EXTRA.
 
-CLÁUSULA 5ª – DAS RESPONSABILIDADES E OBRIGAÇÕES
+3. NÚMERO DE CRIANÇAS: ATÉ ${form.children_estimate || 'não informado'} CRIANÇAS PARTICIPARÃO, DEVENDO SER INFORMADO À CONTRATADA COM 10 DIAS DE ANTECEDÊNCIA.
 
-1. A CONTRATADA compromete-se a chegar com antecedência mínima de ${form.arrival_minutes} minutos para ambientação e organização dos materiais.
-2. A CONTRATANTE deve garantir espaço seguro, limpo e adequado para as brincadeiras, além de ponto de energia elétrica caso necessário.
-3. A guarda, vigilância geral e integridade física de crianças menores de 3 anos ou que necessitem de cuidados especiais permanecem sob responsabilidade dos respectivos pais ou responsáveis presentes no evento.
-4. ${form.catering_required ? 'A alimentação dos monitores será fornecida pela CONTRATANTE, conforme combinado entre as partes.' : 'Não foi prevista alimentação dos monitores como condição obrigatória neste contrato.'}
+CLÁUSULA 3ª - DAS OBRIGAÇÕES DO CONTRATANTE
 
-CLÁUSULA 6ª – DO CANCELAMENTO E REMARCAÇÃO
+1. DISPONIBILIDADE: O CONTRATANTE FORNECERÁ TODOS OS MEIOS NECESSÁRIOS PARA A EXECUÇÃO DOS SERVIÇOS, COMO ENERGIA ELÉTRICA, ILUMINAÇÃO E LOCAL ADEQUADO.
 
-1. Em caso de desistência ou necessidade de remarcação, serão observadas as condições previamente acordadas entre as partes e registradas neste contrato.
-2. Em caso de força maior, as partes poderão acordar nova data, conforme disponibilidade da CONTRATADA.
-3. Outras condições específicas: ${form.contract_details || 'Não foram informadas condições adicionais.'}
+2. COMUNICAÇÃO: EM EVENTOS EM CONDOMÍNIO, O CONTRATANTE INFORMARÁ ANTECIPADAMENTE À SEGURANÇA E PORTARIA SOBRE A CHEGADA DOS FUNCIONÁRIOS DA CONTRATADA.
 
-CLÁUSULA 7ª – DO USO DE IMAGEM
+3. PAGAMENTO: O PAGAMENTO SERÁ EFETUADO CONFORME A CLÁUSULA 5ª.
 
-A CONTRATANTE ${form.image_authorized ? 'AUTORIZA' : 'NÃO AUTORIZA'} o registro fotográfico e em vídeo da equipe de recreação durante o evento para divulgação em portfólio profissional e redes sociais da CONTRATADA, sempre prezando pelo respeito e integridade das crianças.
+4. ALTERAÇÕES: QUALQUER ALTERAÇÃO NA DATA/HORÁRIO DA FESTA DEVE SER COMUNICADA COM NO MÍNIMO 15 DIAS DE ANTECEDÊNCIA.
 
-CLÁUSULA 8ª – DAS OBSERVAÇÕES ADICIONAIS
+5. ALIMENTAÇÃO: A CONTRATANTE COMPROMETE-SE A FORNECER ALIMENTAÇÃO ADEQUADA PARA OS FUNCIONÁRIOS DA CONTRATADA QUE ESTIVEREM DESEMPENHANDO SUAS FUNÇÕES DURANTE A REALIZAÇÃO DO EVENTO.
 
-${form.additional_observations || 'Não há observações adicionais.'}
+CLÁUSULA 4ª - DAS OBRIGAÇÕES DA CONTRATADA
 
-CLÁUSULA 9ª – DO FORO
+1. INFORMAÇÕES: A CONTRATADA FORNECERÁ UMA CÓPIA DO CONTRATO COM TODAS AS ESPECIFICIDADES DO SERVIÇO.
 
-Para dirimir quaisquer controvérsias oriundas deste contrato, as partes elegem o foro da Comarca de ${company?.city || 'São Paulo'} - ${company?.state || 'SP'}.
+2. EXECUÇÃO: A EQUIPE CONTRATADA EXECUTARÁ TODAS AS ATIVIDADES PROPOSTAS, RESSARCINDO O VALOR CORRESPONDENTE AO TEMPO DE ATIVIDADES NÃO EXECUTADAS, SALVO POR SOLICITAÇÃO EXPRESSA DO CONTRATANTE.
 
-E por estarem justos e contratados, firmam o presente instrumento.
+3. PONTUALIDADE: EM CASO DE ATRASO, A CONTRATADA COMPENSARÁ O TEMPO AO FINAL DA RECREAÇÃO.
 
-${address}, ${today}.
+4. PROFISSIONAIS: A CONTRATADA COMPROMETE-SE A FORNECER OS PROFISSIONAIS QUALIFICADOS E MATERIAIS NECESSÁRIOS PARA A EXECUÇÃO DOS SERVIÇOS.
 
-____________________________________________
-CONTRATANTE: ${form.contractor_name}
-CPF/CNPJ: ${form.contractor_document || 'não informado'}
+CLÁUSULA 5ª – DA RETRIBUIÇÃO
 
-____________________________________________
-CONTRATADA: ${name}
+EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA TOTAL DE ${money(total)}, ESPECIFICADOS:
+
+1. PACOTE ${(packageName || 'CONTRATADO').toUpperCase()}: ${money(Math.max(0, total - Number(form.deposit_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
+2. TAXA DE DESLOCAMENTO: ${money(Number(form.deposit_amount || 0))}
+
+O PAGAMENTO ${Number(form.balance_amount || 0) <= 0 ? 'INTEGRAL FOI REALIZADO' : 'SERÁ REALIZADO CONFORME AS CONDIÇÕES INFORMADAS'}${form.deposit_date ? ` NA DATA DE ${dateLabel(form.deposit_date)}` : ''}.
+
+CLÁUSULA 6ª - DA RESCISÃO IMOTIVADA
+
+1. DESISTÊNCIA: DESISTÊNCIA POR PARTE DO CONTRATANTE RESULTARÁ NA PERDA DO SINAL.
+
+2. DESISTÊNCIA DA CONTRATADA: EM CASO DE DESISTÊNCIA DA CONTRATADA, O SINAL SERÁ RESSARCIDO EM DOBRO.
+
+CLÁUSULA 7ª - DO USO DE IMAGEM
+
+1. AUTORIZAÇÃO: O CONTRATANTE ${form.image_authorized ? 'AUTORIZA' : 'NÃO AUTORIZA'} A CONTRATADA A UTILIZAR IMAGENS E VÍDEOS DAS CRIANÇAS E DEMAIS CONVIDADOS DURANTE A FESTA, PARA FINS DE DIVULGAÇÃO E PROMOÇÃO DOS SERVIÇOS PRESTADOS, EM MÍDIAS IMPRESSAS E DIGITAIS.
+
+2. DIREITOS DE USO: O CONTRATANTE ${form.image_authorized ? 'CONCEDE' : 'NÃO CONCEDE'} À CONTRATADA O DIREITO DE UTILIZAR AS IMAGENS, SEM NECESSIDADE DE COMPENSAÇÃO OU AUTORIZAÇÃO ADICIONAL, EM REDES SOCIAIS, WEBSITES E OUTROS MATERIAIS PROMOCIONAIS.
+
+3. EXCEÇÃO: CASO ALGUM RESPONSÁVEL NÃO DESEJE QUE A IMAGEM DE SUA CRIANÇA SEJA UTILIZADA, DEVE NOTIFICAR A CONTRATADA POR ESCRITO ANTES DO INÍCIO DO EVENTO, PARA QUE MEDIDAS ADEQUADAS SEJAM TOMADAS.
+
+CLÁUSULA 8ª - DO FORO
+
+FICA DESDE JÁ ELEITO O FORO DA COMARCA DE ${company?.city || 'BELO HORIZONTE'} PARA SEREM RESOLVIDAS EVENTUAIS PENDÊNCIAS DECORRENTES DESTE CONTRATO.
+
+JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
+
+${name.toUpperCase()} (${company?.legal_name || 'LARISSA GARCIA RIBEIRO DE ALMEIDA'})
+
+${form.contractor_name || 'CONTRATANTE'}
+
+Documento gerado em ${today}.
 `;
 }
-
 export function ContractManager({ initialContracts, events, clients, packages, company }: Props) {
   const [contracts, setContracts] = useState(initialContracts);
   const [editing, setEditing] = useState<ContractRecord | null>(null);
