@@ -322,10 +322,9 @@ function ContractPreview({ text }: { text: string }) {
             const rest = value.slice(separator + 1);
             return <div key={index} className="pl-2"><strong className="font-bold text-slate-950">{label}</strong>{rest ? ` ${rest.trim()}` : ''}</div>;
           }
-          const match = value.match(/^(\d+\.)(.*)$/);
-          return <div key={index} className="pl-2"><strong className="font-bold text-slate-950">{match?.[1]}</strong>{match?.[2]}</div>;
+          return <div key={index} className="pl-2">{value}</div>;
         }
-        if (/^SERVIÇO PRESTADO:/.test(value)) {
+        if (/^(SERVIÇO PRESTADO|RECREAÇÃO INFANTIL ABRANGENDO):/.test(value)) {
           const separator = value.indexOf(':');
           const label = value.slice(0, separator + 1);
           const rest = value.slice(separator + 1);
