@@ -66,35 +66,79 @@ function encodePdfText(text: string) {
 
 function createContractPdfBlob(text: string) {
   const normalized = cleanContractText(text).replace(/\r\n/g, '\n');
-  const sourceLines = normalized.split('\n').flatMap((line) => {
-    const words = line.trim().split(/\s+/).filter(Boolean);
-    if (!words.length) return [''];
+  const rawLines = normalized.split('\n');
+
+  const isTitle = (line: string) => line.trim() === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO';
+  const isHeading = (line: string) => {
+    const value = line.trim();
+    return value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
+      || /^CLÁUSULA \d+ª\s*[-–]/.test(value)
+      || /^\d+\. (CONTRATANTE|CONTRATADA)$/.test(value);
+  };
+
+  const wrapLine = (line: string, maxChars: number) => {
+    const trimmed = line.trim();
+    if (!trimmed) return [''];
+    const words = trimmed.split(/\s+/);
     const result: string[] = [];
     let current = '';
     for (const word of words) {
       const candidate = current ? current + ' ' + word : word;
-      if (candidate.length > 95) { if (current) result.push(current); current = word; }
-      else current = candidate;
+      if (candidate.length > maxChars && current) {
+        result.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
     }
     if (current) result.push(current);
     return result;
+  };
+
+  const styledLines: Array<{ text: string; kind: 'title' | 'heading' | 'body' }> = [];
+  rawLines.forEach((line) => {
+    const value = line.trim();
+    const kind = isTitle(value) ? 'title' : isHeading(value) ? 'heading' : 'body';
+    const wrapped = wrapLine(line, kind === 'title' ? 72 : kind === 'heading' ? 82 : 92);
+    wrapped.forEach((item, index) => {
+      styledLines.push({ text: item, kind: index === 0 ? kind : 'body' });
+    });
   });
-  const pages: string[][] = [];
-  for (let i = 0; i < sourceLines.length; i += 50) pages.push(sourceLines.slice(i, i + 50));
-  if (!pages.length) pages.push(['']);
+
+  const pages: typeof styledLines[] = [];
+  const linesPerPage = 45;
+  for (let i = 0; i < styledLines.length; i += linesPerPage) {
+    pages.push(styledLines.slice(i, i + linesPerPage));
+  }
+  if (!pages.length) pages.push([{ text: '', kind: 'body' }]);
+
   const objects: string[] = [
     '<< /Type /Catalog /Pages 2 0 R >>',
     '<< /Type /Pages /Kids [] /Count 0 >>',
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
   ];
+
   const winAnsi: Record<string, number> = {
-    'À':192,'Á':193,'Â':194,'Ã':195,'Ä':196,'Å':197,'Ç':199,'È':200,'É':201,'Ê':202,'Ë':203,'Ì':204,'Í':205,'Î':206,'Ï':207,'Ñ':209,'Ò':210,'Ó':211,'Ô':212,'Õ':213,'Ö':214,'Ù':217,'Ú':218,'Û':219,'Ü':220,'Ý':221,'à':224,'á':225,'â':226,'ã':227,'ä':228,'å':229,'ç':231,'è':232,'é':233,'ê':234,'ë':235,'ì':236,'í':237,'î':238,'ï':239,'ñ':241,'ò':242,'ó':243,'ô':244,'õ':245,'ö':246,'ù':249,'ú':250,'û':251,'ü':252,'ý':253,'€':128,'–':150,'—':151,'•':149
+    'À':192,'Á':193,'Â':194,'Ã':195,'Ä':196,'Å':197,'Ç':199,'È':200,'É':201,'Ê':202,'Ë':203,
+    'Ì':204,'Í':205,'Î':206,'Ï':207,'Ñ':209,'Ò':210,'Ó':211,'Ô':212,'Õ':213,'Ö':214,
+    'Ù':217,'Ú':218,'Û':219,'Ü':220,'Ý':221,'à':224,'á':225,'â':226,'ã':227,'ä':228,
+    'å':229,'ç':231,'è':232,'é':233,'ê':234,'ë':235,'ì':236,'í':237,'î':238,'ï':239,
+    'ñ':241,'ò':242,'ó':243,'ô':244,'õ':245,'ö':246,'ù':249,'ú':250,'û':251,'ü':252,
+    'ý':253,'€':128,'‚':130,'„':132,'…':133,'†':134,'‡':135,'‰':137,'Š':138,'‹':139,
+    'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'™':153,
+    'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159,'ª':170,'º':186
   };
+
   const toBytes = (value: string) => {
     const bytes: number[] = [];
-    for (const char of value) { const code = char.charCodeAt(0); bytes.push(code <= 127 ? code : (winAnsi[char] ?? 63)); }
+    for (const char of value) {
+      const code = char.charCodeAt(0);
+      bytes.push(code <= 127 ? code : (winAnsi[char] ?? 63));
+    }
     return new Uint8Array(bytes);
   };
+
   const escapePdf = (value: string) => {
     let result = '';
     for (const byte of toBytes(value)) {
@@ -104,28 +148,64 @@ function createContractPdfBlob(text: string) {
     }
     return result;
   };
+
   const pageIds: number[] = [];
   pages.forEach((pageLines) => {
-    const content = ['BT','/F1 9 Tf','50 790 Td','12 TL',...pageLines.flatMap((line) => ['(' + escapePdf(line) + ') Tj','T*']),'ET'].join('\n');
+    const commands = ['BT', '50 790 Td'];
+    pageLines.forEach((line, index) => {
+      const isTitleLine = line.kind === 'title';
+      const isHeadingLine = line.kind === 'heading';
+      const fontSize = isTitleLine ? 15 : isHeadingLine ? 11 : 9.5;
+      const leading = isTitleLine ? 20 : isHeadingLine ? 16 : 13;
+      commands.push(`/F${isTitleLine || isHeadingLine ? '2' : '1'} ${fontSize} Tf`);
+      if (index > 0) commands.push(`0 -${leading} Td`);
+      commands.push('(' + escapePdf(line.text) + ') Tj');
+    });
+    commands.push('ET');
+
+    const content = commands.join('\n');
     const contentId = objects.length + 1;
     objects.push('<< /Length ' + toBytes(content).length + ' >>\nstream\n' + content + '\nendstream');
     const pageId = objects.length + 1;
-    objects.push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents ' + contentId + ' 0 R >>');
+    objects.push(
+      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] ' +
+      '/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> ' +
+      '/Contents ' + contentId + ' 0 R >>'
+    );
     pageIds.push(pageId);
   });
+
   objects[1] = '<< /Type /Pages /Kids [' + pageIds.map((id) => id + ' 0 R').join(' ') + '] /Count ' + pageIds.length + ' >>';
+
   const chunks: Uint8Array[] = [];
-  const header = toBytes('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'); chunks.push(header);
-  let offset = header.length; const offsets: number[] = [0];
-  const push = (value: string) => { const bytes = toBytes(value); chunks.push(bytes); offset += bytes.length; };
-  objects.forEach((object, index) => { offsets.push(offset); push((index + 1) + ' 0 obj\n' + object + '\nendobj\n'); });
+  const header = toBytes('%PDF-1.4\n%\\xE2\\xE3\\xCF\\xD3\n');
+  chunks.push(header);
+  let offset = header.length;
+  const offsets: number[] = [0];
+
+  const push = (value: string) => {
+    const bytes = toBytes(value);
+    chunks.push(bytes);
+    offset += bytes.length;
+  };
+
+  objects.forEach((object, index) => {
+    offsets.push(offset);
+    push((index + 1) + ' 0 obj\n' + object + '\nendobj\n');
+  });
+
   const xrefOffset = offset;
   push('xref\n0 ' + (objects.length + 1) + '\n0000000000 65535 f \n');
-  for (let i = 1; i < offsets.length; i++) push(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+  for (let i = 1; i < offsets.length; i++) {
+    push(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
+  }
   push('trailer\n<< /Size ' + (objects.length + 1) + ' /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF\n');
-  return new Blob(chunks.map((chunk) => new Uint8Array(chunk).slice().buffer), { type: 'application/pdf' });
-}
 
+  return new Blob(
+    chunks.map((chunk) => new Uint8Array(chunk).slice().buffer),
+    { type: 'application/pdf' }
+  );
+}
 function downloadContractPdf(contract: ContractRecord) {
   const blob = createContractPdfBlob(contract.generated_text || '');
   const url = URL.createObjectURL(blob);
