@@ -86,21 +86,63 @@ function createContractPdfBlob(text: string) {
     return { label: match[1], rest: match[2] };
   };
 
-  const wrapLine = (line: string, maxChars: number) => {
+  const wrapLine = (line: string, maxWidth: number, fontSize = 9.5, bold = false) => {
     const trimmed = line.trim();
     if (!trimmed) return [''];
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      const fallbackChars = Math.max(20, Math.floor(maxWidth / (fontSize * 0.5)));
+      const words = trimmed.split(/\s+/);
+      const result: string[] = [];
+      let current = '';
+      for (const word of words) {
+        const candidate = current ? current + ' ' + word : word;
+        if (candidate.length > fallbackChars && current) {
+          result.push(current);
+          current = word;
+        } else {
+          current = candidate;
+        }
+      }
+      if (current) result.push(current);
+      return result;
+    }
+
+    context.font = (bold ? 'bold ' : '') + fontSize + 'px Helvetica, Arial, sans-serif';
     const words = trimmed.split(/\s+/);
     const result: string[] = [];
     let current = '';
+
     for (const word of words) {
+      if (context.measureText(word).width > maxWidth) {
+        if (current) {
+          result.push(current);
+          current = '';
+        }
+        let chunk = '';
+        for (const char of word) {
+          const candidate = chunk + char;
+          if (context.measureText(candidate).width > maxWidth && chunk) {
+            result.push(chunk);
+            chunk = char;
+          } else {
+            chunk = candidate;
+          }
+        }
+        if (chunk) current = chunk;
+        continue;
+      }
+
       const candidate = current ? current + ' ' + word : word;
-      if (candidate.length > maxChars && current) {
+      if (context.measureText(candidate).width > maxWidth && current) {
         result.push(current);
         current = word;
       } else {
         current = candidate;
       }
     }
+
     if (current) result.push(current);
     return result;
   };
@@ -125,7 +167,12 @@ function createContractPdfBlob(text: string) {
 
     const labeled = splitLabel(value);
     if (labeled) {
-      const restLines = wrapLine(labeled.rest.trim(), 72);
+      const labelFontSize = 9.5;
+      const pageTextWidth = 495;
+      const labelWidth = pdfTextWidth(labeled.label, labelFontSize, true);
+      const restWidth = Math.max(120, pageTextWidth - labelWidth - 2);
+      const restLines = wrapLine(labeled.rest.trim(), restWidth, 9.5, false);
+
       if (!restLines.length || !labeled.rest.trim()) {
         styledLines.push({ text: value, kind: 'label', label: labeled.label, rest: '' });
         return;
@@ -135,7 +182,7 @@ function createContractPdfBlob(text: string) {
       return;
     }
 
-    const wrapped = wrapLine(line, 92);
+    const wrapped = wrapLine(line, 495, 9.5, false);
     wrapped.forEach((item) => styledLines.push({ text: item, kind: 'body' }));
   });
 
