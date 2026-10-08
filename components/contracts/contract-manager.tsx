@@ -119,7 +119,7 @@ function createContractPdfBlob(text: string) {
   push('xref\n0 ' + (objects.length + 1) + '\n0000000000 65535 f \n');
   for (let i = 1; i < offsets.length; i++) push(String(offsets[i]).padStart(10, '0') + ' 00000 n \n');
   push('trailer\n<< /Size ' + (objects.length + 1) + ' /Root 1 0 R >>\nstartxref\n' + xrefOffset + '\n%%EOF\n');
-  return new Blob(chunks, { type: 'application/pdf' });
+  return new Blob(chunks.map((chunk) => new Uint8Array(chunk).slice().buffer), { type: 'application/pdf' });
 }
 
 function downloadContractPdf(contract: ContractRecord) {
