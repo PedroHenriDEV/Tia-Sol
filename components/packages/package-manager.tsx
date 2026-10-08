@@ -22,11 +22,6 @@ const emptyForm: PackageDraft = {
   active: true,
 };
 
-const currency = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-});
-
 export function PackageManager({ initialPackages, error }: { initialPackages: Package[]; error?: string }) {
   const [packages, setPackages] = useState(initialPackages);
   const [draft, setDraft] = useState<PackageDraft>(emptyForm);
@@ -70,20 +65,29 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
     setDraft({
       name: packageItem.name,
       description: packageItem.description ?? '',
-      price: String(packageItem.price),
+      price: packageItem.price > 0 ? String(packageItem.price) : '',
       duration: String(packageItem.duration),
       activities: Array.isArray(packageItem.activities) ? packageItem.activities : [],
       notes: packageItem.notes ?? '',
       active: packageItem.active,
     });
     setMessage('');
+
+    requestAnimationFrame(() => {
+      formPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('package-form-heading')?.focus();
+    });
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setMessage('');
 
-    const normalized = { ...draft, activities: draft.activities.map((item) => item.trim()).filter(Boolean) };
+    const normalized = {
+      ...draft,
+      price: draft.price.trim() || '0',
+      activities: draft.activities.map((item) => item.trim()).filter(Boolean),
+    };
 
     const validation = packageSchema.safeParse(normalized);
     if (!validation.success) {
@@ -99,12 +103,14 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
       if (editingId) {
         const updated = await updatePackage(supabase, editingId, payload);
         setPackages((current) => current.map((item) => (item.id === editingId ? updated : item)));
-        resetForm();
+        setDraft(emptyForm);
+        setEditingId(null);
         setMessage('Pacote atualizado com sucesso.');
       } else {
         const created = await createPackage(supabase, payload);
         setPackages((current) => [created, ...current]);
-        resetForm();
+        setDraft(emptyForm);
+        setEditingId(null);
         setMessage('Pacote cadastrado com sucesso.');
       }
     } catch (error) {
@@ -145,9 +151,7 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
         </button>
       </div>
 
-      {error ? (
-        <div className="feedback-error p-4">{error}</div>
-      ) : null}
+      {error ? <div className="feedback-error p-4">{error}</div> : null}
 
       <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)] xl:gap-12">
         <section>
@@ -177,7 +181,9 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
                     </div>
 
                     <div className="flex shrink-0 items-baseline gap-2 sm:flex-col sm:items-end sm:gap-0.5">
-                      <p className="text-lg font-semibold text-[var(--foreground)]">{currency.format(packageItem.price)}</p>
+                      <p className="text-lg font-semibold text-[var(--foreground)]">
+                        {packageItem.price > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(packageItem.price) : 'Valor a definir'}
+                      </p>
                       <p className="text-sm text-[var(--muted)]">{packageItem.duration} horas</p>
                     </div>
                   </div>
@@ -222,131 +228,128 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
               </p>
             </div>
           ) : (
-          <>
-          <h2 id="package-form-heading" tabIndex={-1} className="text-xl font-semibold text-[var(--foreground)]">
-            {editingId ? 'Editar pacote' : 'Novo pacote'}
-          </h2>
+            <>
+              <h2 id="package-form-heading" tabIndex={-1} className="text-xl font-semibold text-[var(--foreground)]">
+                {editingId ? 'Editar pacote' : 'Novo pacote'}
+              </h2>
 
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-            <label className="block text-sm font-medium text-[var(--foreground)]">
-              Nome do pacote
-              <input
-                required
-                value={draft.name}
-                onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-                className="input mt-2"
-                placeholder="Festa Completa"
-              />
-            </label>
+              <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                <label className="block text-sm font-medium text-[var(--foreground)]">
+                  Nome do pacote
+                  <input
+                    required
+                    value={draft.name}
+                    onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+                    className="input mt-2"
+                    placeholder="Festa Completa"
+                  />
+                </label>
 
-            <label className="block text-sm font-medium text-[var(--foreground)]">
-              Descrição
-              <textarea
-                value={draft.description}
-                onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
-                className="input mt-2 min-h-24 resize-y"
-                placeholder="Descreva o pacote, o público e a proposta da experiência."
-              />
-            </label>
+                <label className="block text-sm font-medium text-[var(--foreground)]">
+                  Descrição
+                  <textarea
+                    value={draft.description}
+                    onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
+                    className="input mt-2 min-h-24 resize-y"
+                    placeholder="Descreva o pacote, o público e a proposta da experiência."
+                  />
+                </label>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-medium text-[var(--foreground)]">
-                Valor
-                <input
-                  required
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={draft.price}
-                  onChange={(event) => setDraft((current) => ({ ...current, price: event.target.value }))}
-                  className="input mt-2"
-                />
-              </label>
-
-              <label className="block text-sm font-medium text-[var(--foreground)]">
-                Duração (horas)
-                <input
-                  required
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={draft.duration}
-                  onChange={(event) => setDraft((current) => ({ ...current, duration: event.target.value }))}
-                  className="input mt-2"
-                />
-              </label>
-            </div>
-
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-[var(--foreground)]">Atividades</span>
-                <button type="button" className="text-sm font-medium text-[var(--primary)]" onClick={addActivity}>
-                  + Adicionar atividade
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                {draft.activities.map((activity, index) => (
-                  <div key={`${index}-${activity}`} className="flex gap-2">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block text-sm font-medium text-[var(--foreground)]">
+                    Valor (opcional)
                     <input
-                      value={activity}
-                      onChange={(event) => updateActivity(index, event.target.value)}
-                      className="input"
-                      placeholder="Ex.: Gincanas"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={draft.price}
+                      onChange={(event) => setDraft((current) => ({ ...current, price: event.target.value }))}
+                      className="input mt-2"
+                      placeholder="Deixe em branco para definir depois"
                     />
-                    <button
-                      type="button"
-                      aria-label="Remover atividade"
-                      className="rounded-xl border border-[var(--border)] p-2 text-[var(--muted)] hover:text-[var(--danger)]"
-                      onClick={() => removeActivity(index)}
-                    >
-                      <Trash2 size={16} />
+                  </label>
+
+                  <label className="block text-sm font-medium text-[var(--foreground)]">
+                    Duração (horas)
+                    <input
+                      required
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={draft.duration}
+                      onChange={(event) => setDraft((current) => ({ ...current, duration: event.target.value }))}
+                      className="input mt-2"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium text-[var(--foreground)]">Atividades</span>
+                    <button type="button" className="text-sm font-medium text-[var(--primary)]" onClick={addActivity}>
+                      + Adicionar atividade
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <label className="block text-sm font-medium text-[var(--foreground)]">
-              Observações
-              <textarea
-                value={draft.notes}
-                onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
-                className="input mt-2 min-h-24 resize-y"
-                placeholder="Informações relevantes para a operação do pacote."
-              />
-            </label>
+                  <div className="space-y-2">
+                    {draft.activities.map((activity, index) => (
+                      <div key={`${index}-${activity}`} className="flex gap-2">
+                        <input
+                          value={activity}
+                          onChange={(event) => updateActivity(index, event.target.value)}
+                          className="input"
+                          placeholder="Ex.: Gincanas"
+                        />
+                        <button
+                          type="button"
+                          aria-label="Remover atividade"
+                          className="rounded-xl border border-[var(--border)] p-2 text-[var(--muted)] hover:text-[var(--danger)]"
+                          onClick={() => removeActivity(index)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            <label className="flex items-center gap-3 text-sm font-medium text-[var(--foreground)]">
-              <input
-                type="checkbox"
-                checked={draft.active}
-                onChange={(event) => setDraft((current) => ({ ...current, active: event.target.checked }))}
-                className="h-4 w-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
-              />
-              Ativo
-            </label>
+                <label className="block text-sm font-medium text-[var(--foreground)]">
+                  Observações
+                  <textarea
+                    value={draft.notes}
+                    onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
+                    className="input mt-2 min-h-24 resize-y"
+                    placeholder="Informações relevantes para a operação do pacote."
+                  />
+                </label>
 
-            {message ? (
-              <p
-                role="status"
-                className={`text-sm ${message.includes('sucesso') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}
-              >
-                {message}
-              </p>
-            ) : null}
+                <label className="flex items-center gap-3 text-sm font-medium text-[var(--foreground)]">
+                  <input
+                    type="checkbox"
+                    checked={draft.active}
+                    onChange={(event) => setDraft((current) => ({ ...current, active: event.target.checked }))}
+                    className="h-4 w-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  Ativo
+                </label>
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button type="submit" className="button-primary" disabled={isSubmitting}>
-                {isSubmitting ? 'Salvando...' : <><Save size={18} /> {editingId ? 'Salvar alterações' : 'Salvar pacote'}</>}
-              </button>
+                {message ? (
+                  <p role="status" className={`text-sm ${message.includes('sucesso') ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>
+                    {message}
+                  </p>
+                ) : null}
 
-              <button type="button" className="button-secondary" onClick={resetForm}>
-                Limpar
-              </button>
-            </div>
-          </form>
-          </>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <button type="submit" className="button-primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Salvando...' : <><Save size={18} /> {editingId ? 'Salvar alterações' : 'Salvar pacote'}</>}
+                  </button>
+
+                  <button type="button" className="button-secondary" onClick={resetForm}>
+                    Limpar
+                  </button>
+                </div>
+              </form>
+            </>
           )}
         </aside>
       </div>

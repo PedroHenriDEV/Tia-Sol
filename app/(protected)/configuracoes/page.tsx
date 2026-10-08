@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getMyCompany } from '@/services/company';
 import { CompanyForm } from '@/components/company/company-form';
+import { BackupExport } from '@/components/backup/backup-export';
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -30,9 +31,12 @@ export default async function SettingsPage() {
           {error}
         </div>
       ) : (
-        <section className="border-t border-[var(--border)] pt-6">
-          <CompanyForm company={company} />
-        </section>
+        <>
+          <section className="border-t border-[var(--border)] pt-6">
+            <CompanyForm company={company} />
+          </section>
+          <BackupExport />
+        </>
       )}
     </div>
   );

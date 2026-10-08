@@ -18,6 +18,23 @@ export type Company = {
   updated_at: string;
 };
 
+export type Client = {
+  id: string;
+  company_id: string;
+  name: string;
+  document: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  notes: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Package = {
   id: string;
   company_id: string;
