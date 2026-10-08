@@ -177,34 +177,47 @@ function createContractPdfBlob(text: string) {
     return result;
   };
 
+  const pdfTextWidth = (value: string, fontSize: number, bold = false) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return value.length * fontSize * 0.5;
+    context.font = `${bold ? 'bold ' : ''}${fontSize}px Helvetica, Arial, sans-serif`;
+    return context.measureText(value).width;
+  };
+
   const pageIds: number[] = [];
   pages.forEach((pageLines) => {
-    const commands = ['BT', '50 790 Td'];
-    pageLines.forEach((line, index) => {
+    const commands = ['BT'];
+    let y = 790;
+
+    pageLines.forEach((line) => {
       const isTitleLine = line.kind === 'title';
       const isHeadingLine = line.kind === 'heading';
       const isLabelLine = line.kind === 'label';
       const fontSize = isTitleLine ? 15 : isHeadingLine ? 11 : 9.5;
       const leading = isTitleLine ? 20 : isHeadingLine ? 16 : 13;
-      if (index > 0) commands.push(`0 -${leading} Td`);
+
+      commands.push(`1 0 0 1 50 ${y} Tm`);
 
       if (isTitleLine || isHeadingLine) {
         commands.push(`/F2 ${fontSize} Tf`);
         commands.push('(' + escapePdf(line.text) + ') Tj');
-        return;
-      }
-
-      if (isLabelLine && line.label !== undefined) {
+      } else if (isLabelLine && line.label !== undefined) {
         commands.push(`/F2 ${fontSize} Tf`);
         commands.push('(' + escapePdf(line.label) + ') Tj');
+
+        const labelWidth = pdfTextWidth(line.label, fontSize, true);
+        commands.push(`${labelWidth.toFixed(2)} 0 Td`);
         commands.push(`/F1 ${fontSize} Tf`);
         if (line.rest) commands.push('(' + escapePdf(line.rest) + ') Tj');
-        return;
+      } else {
+        commands.push(`/F1 ${fontSize} Tf`);
+        commands.push('(' + escapePdf(line.text) + ') Tj');
       }
 
-      commands.push(`/F1 ${fontSize} Tf`);
-      commands.push('(' + escapePdf(line.text) + ') Tj');
+      y -= leading;
     });
+
     commands.push('ET');
 
     const content = commands.join('\n');
