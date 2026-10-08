@@ -25,7 +25,7 @@ const emptyForm: ContractInput = {
   event_location: '', event_location_type: '', team_size: 1, included_activities: [],
   included_equipment: [], total_amount: 0, deposit_amount: 0, deposit_date: '',
   balance_amount: 0, balance_due_date: '', payment_method: 'PIX', pix_key: '',
-  additional_payment_terms: '', catering_required: false,
+  additional_payment_terms: '', displacement_amount: 0, catering_required: false,
   image_authorized: false, additional_observations: '', contract_details: '',
 };
 
