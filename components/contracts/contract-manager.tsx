@@ -31,20 +31,118 @@ const emptyForm: ContractInput = {
 
 const statusLabels = { rascunho: 'Rascunho', gerado: 'Gerado', enviado: 'Enviado', assinado: 'Assinado', cancelado: 'Cancelado' };
 
-function downloadContractPdf(contract: ContractRecord) {
-  const text = contract.generated_text || '';
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Contrato ${String(contract.contract_number).padStart(3, '0')}/${contract.contract_year}</title><style>body{font-family:Arial,sans-serif;padding:40px;line-height:1.55;color:#111;white-space:pre-wrap}h1{text-align:center;font-size:20px}</style></head><body><pre>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre><script>window.onload=()=>window.print()</script></body></html>`;
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!win) { URL.revokeObjectURL(url); return; }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+function cleanContractText(text: string) {
+  return text.replace(/\\\\n/g, '\\n');
 }
 
-function whatsappContract(contract: ContractRecord) {
+function encodePdfText(text: string) {
+  const map: Record<string, number> = {
+    '€': 0x80, '‚': 0x82, 'ƒ': 0x83, '„': 0x84, '…': 0x85, '†': 0x86, '‡': 0x87,
+    'ˆ': 0x88, '‰': 0x89, 'Š': 0x8a, '‹': 0x8b, 'Œ': 0x8c, 'Ž': 0x8e, '‘': 0x91,
+    '’': 0x92, '“': 0x93, '”': 0x94, '•': 0x95, '–': 0x96, '—': 0x97, '˜': 0x98,
+    '™': 0x99, 'š': 0x9a, '›': 0x9b, 'œ': 0x9c, 'ž': 0x9e, 'Ÿ': 0x9f,
+    'À': 0xc0, 'Á': 0xc1, 'Â': 0xc2, 'Ã': 0xc3, 'Ä': 0xc4, 'Å': 0xc5, 'Æ': 0xc6,
+    'Ç': 0xc7, 'È': 0xc8, 'É': 0xc9, 'Ê': 0xca, 'Ë': 0xcb, 'Ì': 0xcc, 'Í': 0xcd,
+    'Î': 0xce, 'Ï': 0xcf, 'Ð': 0xd0, 'Ñ': 0xd1, 'Ò': 0xd2, 'Ó': 0xd3, 'Ô': 0xd4,
+    'Õ': 0xd5, 'Ö': 0xd6, 'Ø': 0xd8, 'Ù': 0xd9, 'Ú': 0xda, 'Û': 0xdb, 'Ü': 0xdc,
+    'Ý': 0xdd, 'à': 0xe0, 'á': 0xe1, 'â': 0xe2, 'ã': 0xe3, 'ä': 0xe4, 'å': 0xe5,
+    'æ': 0xe6, 'ç': 0xe7, 'è': 0xe8, 'é': 0xe9, 'ê': 0xea, 'ë': 0xeb, 'ì': 0xec,
+    'í': 0xed, 'î': 0xee, 'ï': 0xef, 'ð': 0xf0, 'ñ': 0xf1, 'ò': 0xf2, 'ó': 0xf3,
+    'ô': 0xf4, 'õ': 0xf5, 'ö': 0xf6, 'ø': 0xf8, 'ù': 0xf9, 'ú': 0xfa, 'û': 0xfb,
+    'ü': 0xfc, 'ý': 0xfd, 'þ': 0xfe, 'ÿ': 0xff
+  };
+  return Array.from(text).map((char) => {
+    const code = char.charCodeAt(0);
+    const byte = code <= 0x7f ? code : map[char] ?? 0x3f;
+    if (byte === 0x28 || byte === 0x29 || byte === 0x5c) return '\\\\' + byte.toString(8).padStart(3, '0');
+    if (byte < 0x20 || byte > 0x7e) return '\\\\' + byte.toString(8).padStart(3, '0');
+    return char;
+  }).join('');
+}
+
+function createContractPdfBlob(text: string) {
+  const normalized = cleanContractText(text);
+  const sourceLines = normalized.split('\\n').flatMap((line) => {
+    const words = line.split(' ');
+    const lines: string[] = [];
+    let current = '';
+    for (const word of words) {
+      const candidate = current ? current + ' ' + word : word;
+      if (candidate.length > 105) {
+        if (current) lines.push(current);
+        current = word;
+      } else current = candidate;
+    }
+    lines.push(current);
+    return lines;
+  });
+  const pages: string[][] = [];
+  for (let i = 0; i < sourceLines.length; i += 48) pages.push(sourceLines.slice(i, i + 48));
+  if (!pages.length) pages.push(['']);
+
+  const objects: string[] = [];
+  const pageIds: number[] = [];
+  const contentIds: number[] = [];
+  objects.push('<< /Type /Catalog /Pages 2 0 R >>');
+  objects.push('<< /Type /Pages /Kids [] /Count 0 >>');
+  objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  const pageTree = 2;
+
+  pages.forEach((lines) => {
+    const content = ['BT', '/F1 9 Tf', '50 790 Td', '12 TL'];
+    for (const line of lines) {
+      content.push(`(${encodePdfText(line)}) Tj`, 'T*');
+    }
+    content.push('ET');
+    const contentObject = objects.length + 1;
+    objects.push(`<< /Length ${content.join('\\n').length} >>\\nstream\\n${content.join('\\n')}\\nendstream`);
+    const pageObject = objects.length + 1;
+    objects.push(`<< /Type /Page /Parent ${pageTree} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObject} 0 R >>`);
+    contentIds.push(contentObject);
+    pageIds.push(pageObject);
+  });
+
+  objects[1] = `<< /Type /Pages /Kids [${pageIds.map((id) => id + ' 0 R').join(' ')}] /Count ${pageIds.length} >>`;
+
+  let pdf = '%PDF-1.4\\n%âãÏÓ\\n';
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\\n${object}\\nendobj\\n`;
+  });
+  const xrefOffset = pdf.length;
+  pdf += `xref\\n0 ${objects.length + 1}\\n0000000000 65535 f \\n`;
+  for (let i = 1; i < offsets.length; i++) pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \\n';
+  pdf += `trailer\\n<< /Size ${objects.length + 1} /Root 1 0 R >>\\nstartxref\\n${xrefOffset}\\n%%EOF`;
+  return new Blob([pdf], { type: 'application/pdf' });
+}
+
+function downloadContractPdf(contract: ContractRecord) {
+  const blob = createContractPdfBlob(contract.generated_text || '');
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `contrato-${String(contract.contract_number).padStart(3, '0')}-${contract.contract_year}.pdf`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+async function whatsappContract(contract: ContractRecord) {
+  const blob = createContractPdfBlob(contract.generated_text || '');
+  const file = new File([blob], `contrato-${String(contract.contract_number).padStart(3, '0')}-${contract.contract_year}.pdf`, { type: 'application/pdf' });
+  const message = `Olá, ${contract.contractor_name}! Segue o contrato de prestação de serviço da Tia Sol para conferência e assinatura.`;
+  try {
+    if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+      await navigator.share({ files: [file], text: message, title: 'Contrato Tia Sol' });
+      return;
+    }
+  } catch {
+    // O compartilhamento pode ser cancelado pelo usuário.
+    return;
+  }
   const phone = (contract.contractor_phone || '').replace(/\\D/g, '');
-  const message = `Olá, ${contract.contractor_name}! Segue o contrato de prestação de serviço da Tia Sol para conferência e assinatura.\\n\\nO botão de PDF abrirá o documento para salvar/imprimir em PDF.`;
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message + ' O PDF foi baixado para anexar à conversa.')}`;
+  downloadContractPdf(contract);
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
@@ -111,7 +209,7 @@ CLÁUSULA 2ª - DA FESTA
 
 1. EM CASO DE ATRASO POR PARTE DO CONTRATANTE, A CONTRATADA RESERVA-SE O DIREITO DE ENCERRAR AS ATIVIDADES NO HORÁRIO PREVISTO.
 
-2. AMPLIAÇÃO DE HORÁRIO: QUALQUER AMPLIAÇÃO DO HORÁRIO DEVERÁ SER ACORDADA PREVIAMENTE COM A CONTRATADA, SUJEITA A TAXA EXTRA.
+2. AMPLIAÇÃO DE HORÁRIO: QUALQUER AMPLIAÇÃO DO HORÁRIO DEVERÁ SER ACORDADA COM A CONTRATADA, SUJEITA A TAXA EXTRA.
 
 3. NÚMERO DE CRIANÇAS: ATÉ ${form.children_estimate || 'não informado'} CRIANÇAS PARTICIPARÃO.
 
@@ -463,7 +561,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <aside className="lg:sticky lg:top-0 lg:self-start">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  <pre className={(preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72') + ' overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs leading-5 text-slate-700 shadow-sm'}>{buildContractText(form, number, company, selectedPackage?.name)}</pre>
+                  <pre className={(preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72') + ' overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs leading-5 text-slate-700 shadow-sm'}>{cleanContractText(buildContractText(form, number, company, selectedPackage?.name))}</pre>
                 </div>
               </aside>
             </div>
