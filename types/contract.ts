@@ -18,10 +18,7 @@ export type ContractRecord = {
   contractor_address: string | null;
   contractor_phone: string | null;
   contractor_email: string | null;
-  celebrant_name: string | null;
   children_estimate: number | null;
-  age_range: string | null;
-  event_theme: string | null;
   event_date: string | null;
   start_time: string | null;
   end_time: string | null;
