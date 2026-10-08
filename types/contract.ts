@@ -31,6 +31,7 @@ export type ContractRecord = {
   included_activities: string[];
   included_equipment: string[];
   total_amount: number;
+  displacement_amount: number;
   deposit_amount: number;
   deposit_date: string | null;
   balance_amount: number;
@@ -38,7 +39,6 @@ export type ContractRecord = {
   payment_method: string | null;
   pix_key: string | null;
   additional_payment_terms: string | null;
-  arrival_minutes: number;
   catering_required: boolean;
   image_authorized: boolean;
   additional_observations: string | null;
