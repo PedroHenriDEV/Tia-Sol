@@ -168,9 +168,38 @@ function createContractPdfBlob(text: string) {
       const isHeadingLine = line.kind === 'heading';
       const fontSize = isTitleLine ? 15 : isHeadingLine ? 11 : 9.5;
       const leading = isTitleLine ? 20 : isHeadingLine ? 16 : 13;
-      commands.push(`/F${isTitleLine || isHeadingLine ? '2' : '1'} ${fontSize} Tf`);
       if (index > 0) commands.push(`0 -${leading} Td`);
-      commands.push('(' + escapePdf(line.text) + ') Tj');
+
+      if (isTitleLine || isHeadingLine) {
+        commands.push(`/F2 ${fontSize} Tf`);
+        commands.push('(' + escapePdf(line.text) + ') Tj');
+        return;
+      }
+
+      const value = line.text.trim();
+      const bulletMatch = value.match(/^(•\\s+)([^:]+:)(.*)$/);
+      const numberedMatch = value.match(/^(\\d+\\.\\s+)([^:]+:)(.*)$/);
+      const serviceMatch = value.match(/^(SERVIÇO PRESTADO:)(.*)$/);
+      const recreationMatch = value.match(/^(RECREAÇÃO INFANTIL ABRANGENDO:)(.*)$/);
+      const match = bulletMatch || numberedMatch || serviceMatch || recreationMatch;
+
+      commands.push(`/F1 ${fontSize} Tf`);
+      if (!match) {
+        commands.push('(' + escapePdf(line.text) + ') Tj');
+        return;
+      }
+
+      const prefix = bulletMatch || numberedMatch ? match[1] : '';
+      const label = bulletMatch || numberedMatch ? match[2] : match[1];
+      const rest = bulletMatch || numberedMatch ? match[3] : match[2];
+
+      commands.push('(' + escapePdf(prefix) + ') Tj');
+      commands.push('/F2 ' + fontSize + ' Tf');
+      commands.push('(' + escapePdf(label) + ') Tj');
+      if (rest) {
+        commands.push('/F1 ' + fontSize + ' Tf');
+        commands.push('(' + escapePdf(rest) + ') Tj');
+      }
     });
     commands.push('ET');
 
