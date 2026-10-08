@@ -32,7 +32,11 @@ const emptyForm: ContractInput = {
 const statusLabels = { rascunho: 'Rascunho', gerado: 'Gerado', enviado: 'Enviado', assinado: 'Assinado', cancelado: 'Cancelado' };
 
 function cleanContractText(text: string) {
-  return text.replace(/\\\\n/g, '\\n');
+  return text
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
 }
 
 function encodePdfText(text: string) {
@@ -170,7 +174,12 @@ function buildContractText(form: ContractInput, number: string, company: Company
   const companyAddress = company?.address || 'não informado';
   const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
   const activities = form.included_activities.length
-    ? form.included_activities.map((item, index) => `${index + 1}. ${item}`).join('\n')
+    ? form.included_activities
+        .flatMap((item) => cleanContractText(item).split('\n'))
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item, index) => `${index + 1}. ${item}`)
+        .join('\n')
     : '1. Conforme atividades do pacote contratado.';
   const total = Number(form.total_amount) || 0;
   const date = dateLabel(form.event_date);
