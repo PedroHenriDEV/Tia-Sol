@@ -22,26 +22,14 @@ export default function LoginPage() {
           <div className="mb-9 lg:hidden"><Logo variant="login" linked={false} /></div>
 
           <div className="surface p-6 sm:p-8">
-            <p className="section-label">Primeiro acesso</p>
-            <h2 className="display-title mt-2 text-3xl">Vamos começar.</h2>
+            <p className="section-label">Acesso privado</p>
+            <h2 className="display-title mt-2 text-3xl">Bem-vinda de volta.</h2>
             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-              Se este é o primeiro acesso da Tia Sol, crie o usuário e a senha para entrar no sistema.
+              Entre com o e-mail e a senha cadastrados para acessar o sistema da Tia Sol.
             </p>
 
             <div className="mt-7">
-              <a
-                href="/cadastro"
-                className="relative z-10 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                Criar primeiro acesso
-              </a>
-            </div>
-
-            <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
-              <p className="text-xs text-[var(--muted)]">Já possui acesso?</p>
-              <div className="mt-1">
-                <Suspense><LoginForm /></Suspense>
-              </div>
+              <Suspense><LoginForm /></Suspense>
             </div>
           </div>
 
