@@ -78,7 +78,6 @@ export async function updateContract(supabase: SupabaseClient, id: string, input
     contractor_address: input.contractor_address || null,
     contractor_phone: input.contractor_phone || null,
     contractor_email: input.contractor_email || null,
-    celebrant_name: input.celebrant_name || null,
     event_location: input.event_location || null,
     event_location_type: input.event_location_type || null,
     deposit_date: input.deposit_date || null,
