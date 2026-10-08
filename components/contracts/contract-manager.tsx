@@ -260,9 +260,9 @@ function createContractPdfBlob(text: string) {
         commands.push('(' + escapePdf(line.label) + ') Tj');
 
         const labelWidth = pdfTextWidth(line.label, fontSize, true);
-        commands.push(`${(labelWidth + 2.5).toFixed(2)} 0 Td`);
+        commands.push(`${labelWidth.toFixed(2)} 0 Td`);
         commands.push(`/F1 ${fontSize} Tf`);
-        if (line.rest) commands.push('(' + escapePdf(line.rest) + ') Tj');
+        if (line.rest) commands.push('(' + escapePdf(' ' + line.rest) + ') Tj');
       } else {
         commands.push(`/F1 ${fontSize} Tf`);
         commands.push('(' + escapePdf(line.text) + ') Tj');
