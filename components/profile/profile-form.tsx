@@ -73,7 +73,7 @@ export function ProfileForm({ email, initialName, initialAvatarUrl }: { email: s
       <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[var(--shadow-soft)] sm:p-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading} className="group relative h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 border-[var(--primary-soft)] bg-[var(--background)]" aria-label="Alterar foto de perfil">
-            {avatarUrl ? <img src={avatarUrl} alt="Foto de perfil" className="h-full w-full object-cover" /> : <span className="grid h-full w-full place-items-center text-[var(--primary)]"><UserRound size={42}/></span>}
+            {avatarUrl ? <img src={avatarUrl} alt="Foto de perfil" className="h-full w-full object-cover object-[50%_35%]" /> : <span className="grid h-full w-full place-items-center text-[var(--primary)]"><UserRound size={42}/></span>}
             <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/60 py-2 text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100"><Camera size={14}/> Alterar</span>
           </button>
           <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => { void onAvatarChange(e.target.files?.[0]); e.currentTarget.value = ''; }} />
