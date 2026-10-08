@@ -30,10 +30,26 @@ export async function listPackages(supabase: SupabaseClient): Promise<Package[]>
     .from('packages')
     .select('*')
     .eq('company_id', companyId)
+    .eq('active', true)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return (data ?? []) as Package[];
+
+  // O banco pode conter registros históricos com diferenças apenas de capitalização.
+  // Para a operação da Tia Sol, cada pacote deve aparecer uma única vez.
+  const uniquePackages = new Map<string, Package>();
+
+  for (const item of (data ?? []) as Package[]) {
+    const key = item.name.trim().toLocaleLowerCase('pt-BR');
+    const current = uniquePackages.get(key);
+
+    // Prefere o nome oficial "Pacote ..." quando houver duplicata.
+    if (!current || /^Pacote\b/.test(item.name)) {
+      uniquePackages.set(key, item);
+    }
+  }
+
+  return Array.from(uniquePackages.values());
 }
 
 export async function createPackage(supabase: SupabaseClient, input: PackageInput): Promise<Package> {
