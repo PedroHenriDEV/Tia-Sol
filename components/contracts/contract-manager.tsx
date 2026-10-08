@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { FileSignature, Pencil, Plus, Trash2, X, CheckCircle2, Copy, Eye } from 'lucide-react';
+import { FileSignature, Pencil, Plus, Trash2, X, CheckCircle2, Copy, Eye, FileDown, MessageCircle } from 'lucide-react';
 import type { Company, Client, Package } from '@/types/database';
 import type { EventRecord } from '@/types/event';
 import type { ContractRecord } from '@/types/contract';
@@ -30,6 +30,23 @@ const emptyForm: ContractInput = {
 };
 
 const statusLabels = { rascunho: 'Rascunho', gerado: 'Gerado', enviado: 'Enviado', assinado: 'Assinado', cancelado: 'Cancelado' };
+
+function downloadContractPdf(contract: ContractRecord) {
+  const text = contract.generated_text || '';
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Contrato ${String(contract.contract_number).padStart(3, '0')}/${contract.contract_year}</title><style>body{font-family:Arial,sans-serif;padding:40px;line-height:1.55;color:#111;white-space:pre-wrap}h1{text-align:center;font-size:20px}</style></head><body><pre>${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre><script>window.onload=()=>window.print()</script></body></html>`;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) { URL.revokeObjectURL(url); return; }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function whatsappContract(contract: ContractRecord) {
+  const phone = (contract.contractor_phone || '').replace(/\\D/g, '');
+  const message = `Olá, ${contract.contractor_name}! Segue o contrato de prestação de serviço da Tia Sol para conferência e assinatura.\\n\\nO botão de PDF abrirá o documento para salvar/imprimir em PDF.`;
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
 function money(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
@@ -354,6 +371,8 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={() => openView(contract)} title="Visualizar" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Eye size={17} /></button>
+                  <button onClick={() => downloadContractPdf(contract)} title="Gerar PDF" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><FileDown size={17} /></button>
+                  <button onClick={() => whatsappContract(contract)} title="Enviar pelo WhatsApp" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-green-50 hover:text-green-600"><MessageCircle size={17} /></button>
                   <button onClick={() => openEdit(contract)} title="Editar" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-[var(--background)]"><Pencil size={17} /></button>
                   <button onClick={() => remove(contract)} title="Excluir" className="rounded-lg p-2 text-[var(--muted-foreground)] hover:bg-red-50 hover:text-red-600"><Trash2 size={17} /></button>
                 </div>
