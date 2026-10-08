@@ -125,7 +125,13 @@ function createContractPdfBlob(text: string) {
 
     const labeled = splitLabel(value);
     if (labeled) {
-      styledLines.push({ text: value, kind: 'label', label: labeled.label, rest: labeled.rest });
+      const restLines = wrapLine(labeled.rest.trim(), 72);
+      if (!restLines.length || !labeled.rest.trim()) {
+        styledLines.push({ text: value, kind: 'label', label: labeled.label, rest: '' });
+        return;
+      }
+      styledLines.push({ text: value, kind: 'label', label: labeled.label, rest: restLines[0] });
+      restLines.slice(1).forEach((item) => styledLines.push({ text: item, kind: 'body' }));
       return;
     }
 
