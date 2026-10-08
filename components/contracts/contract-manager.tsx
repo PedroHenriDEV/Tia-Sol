@@ -168,6 +168,40 @@ function companyName(company: Company | null) {
   return company?.trade_name || company?.legal_name || 'TIA SOL RECREAÇÃO INFANTIL LTDA';
 }
 
+function isContractHeading(line: string) {
+  const value = line.trim();
+  return value === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO'
+    || value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
+    || /^CLÁUSULA \\d+ª - /.test(value)
+    || /^\\d+\\. (CONTRATANTE|CONTRATADA)$/.test(value);
+}
+
+function ContractPreview({ text }: { text: string }) {
+  return (
+    <div className="overflow-auto rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700 shadow-sm">
+      {cleanContractText(text).split('\\n').map((line, index) => {
+        const value = line.trim();
+        if (!value) return <div key={index} className="h-3" />;
+        if (isContractHeading(value)) {
+          return <div key={index} className="mt-3 border-b border-slate-200 pb-1.5 text-[13px] font-bold uppercase tracking-wide text-slate-900">{value}</div>;
+        }
+        if (/^• /.test(value)) {
+          const [label, ...rest] = value.slice(2).split(':');
+          return <div key={index} className="pl-1"><strong>{label}{rest.length ? ':' : ''}</strong>{rest.length ? ` ${rest.join(':')}` : ''}</div>;
+        }
+        if (/^\\d+\\. /.test(value)) {
+          const match = value.match(/^(\\d+\\.)(.*)$/);
+          return <div key={index} className="pl-2"><strong>{match?.[1]}</strong>{match?.[2]}</div>;
+        }
+        if (/^SERVIÇO PRESTADO:/.test(value)) {
+          const [label, ...rest] = value.split(':');
+          return <div key={index} className="mt-1 pl-1"><strong>{label}:</strong>{rest.join(':')}</div>;
+        }
+        return <p key={index}>{value}</p>;
+      })}
+    </div>
+  );
+}
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
   const name = companyName(company);
   const cnpj = company?.tax_id || 'não informado';
@@ -548,7 +582,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                   <h3 className="font-semibold text-slate-900">5. Valores e pagamento</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label><span className="text-sm font-medium">Valor do pacote</span><input type="number" step="0.01" value={Math.max(0, Number(form.total_amount) - Number(form.displacement_amount || 0))} onChange={(e) => patch({ total_amount: Number(e.target.value) + Number(form.displacement_amount || 0) })} className={input} /></label>
-                    <label><span className="text-sm font-medium">Valor de deslocamento</span><input type="number" step="0.01" min="0" value={form.displacement_amount} onChange={(e) => { const displacement = Number(e.target.value); patch({ displacement_amount: displacement, total_amount: Math.max(0, Number(form.total_amount) - Number(form.displacement_amount || 0)) + displacement }); }} className={input} /></label>
+                    <label><span className="text-sm font-semibold text-pink-700">Valor de deslocamento (R$)</span><input type="number" step="0.01" min="0" value={form.displacement_amount} onChange={(e) => { const displacement = Number(e.target.value); patch({ displacement_amount: displacement, total_amount: Math.max(0, Number(form.total_amount) - Number(form.displacement_amount || 0)) + displacement }); }} className={input} /></label>
                     <label><span className="text-sm font-medium">Sinal / reserva</span><input type="number" step="0.01" value={form.deposit_amount} onChange={(e) => patch({ deposit_amount: Number(e.target.value), balance_amount: Math.max(0, Number(form.total_amount) - Number(e.target.value)) })} className={input} /></label>
                     <label><span className="text-sm font-medium">Data do sinal</span><input type="date" value={form.deposit_date || ''} onChange={(e) => patch({ deposit_date: e.target.value })} className={input} /></label>
                     <label><span className="text-sm font-medium">Vencimento do saldo</span><input type="date" value={form.balance_due_date || ''} onChange={(e) => patch({ balance_due_date: e.target.value })} className={input} /></label>
@@ -575,7 +609,9 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <aside className="lg:sticky lg:top-0 lg:self-start">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  <pre className={(preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72') + ' overflow-auto whitespace-pre-wrap rounded-xl bg-white p-4 text-xs leading-5 text-slate-700 shadow-sm'}>{cleanContractText(buildContractText(form, number, company, selectedPackage?.name))}</pre>
+                  <div className={preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72'}>
+                    <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
+                  </div>
                 </div>
               </aside>
             </div>
