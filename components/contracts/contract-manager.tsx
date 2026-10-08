@@ -20,8 +20,8 @@ type Props = {
 const emptyForm: ContractInput = {
   event_id: null, client_id: null, package_id: null, status: 'rascunho',
   contractor_name: '', contractor_document: '', contractor_rg: '', contractor_address: '',
-  contractor_phone: '', contractor_email: '', celebrant_name: '', children_estimate: 0,
-  age_range: '', event_theme: '', event_date: '', start_time: '', end_time: '',
+  contractor_phone: '', contractor_email: '', children_estimate: 0,
+  event_date: '', start_time: '', end_time: '',
   event_location: '', event_location_type: '', team_size: 1, included_activities: [],
   included_equipment: [], total_amount: 0, deposit_amount: 0, deposit_date: '',
   balance_amount: 0, balance_due_date: '', payment_method: 'PIX', pix_key: '',
@@ -50,10 +50,9 @@ function buildContractText(form: ContractInput, number: string, company: Company
   const companyAddress = company?.address || 'não informado';
   const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
   const activities = form.included_activities.length
-    ? form.included_activities.map((item, index) => `${index + 1}. ${item}`).join('\\n')
+    ? form.included_activities.map((item, index) => `${index + 1}. ${item}`).join('\n')
     : '1. Conforme atividades do pacote contratado.';
   const total = Number(form.total_amount) || 0;
-  const displacement = Math.max(0, total - Number(form.deposit_amount || 0));
   const date = dateLabel(form.event_date);
   const time = form.start_time && form.end_time
     ? `às ${form.start_time}, com encerramento às ${form.end_time} (${Math.max(0, (Number(form.end_time.split(':')[0]) * 60 + Number(form.end_time.split(':')[1] || 0)) - (Number(form.start_time.split(':')[0]) * 60 + Number(form.start_time.split(':')[1] || 0))) / 60}h de duração)`
@@ -103,11 +102,7 @@ CLÁUSULA 3ª - DAS OBRIGAÇÕES DO CONTRATANTE
 
 1. DISPONIBILIDADE: O CONTRATANTE FORNECERÁ TODOS OS MEIOS NECESSÁRIOS PARA A EXECUÇÃO DOS SERVIÇOS, COMO ENERGIA ELÉTRICA, ILUMINAÇÃO E LOCAL ADEQUADO.
 
-2. COMUNICAÇÃO: EM EVENTOS EM CONDOMÍNIO, O CONTRATANTE INFORMARÁ ANTECIPADAMENTE À SEGURANÇA E PORTARIA SOBRE A CHEGADA DOS FUNCIONÁRIOS DA CONTRATADA.
-
 3. PAGAMENTO: O PAGAMENTO SERÁ EFETUADO CONFORME A CLÁUSULA 5ª.
-
-4. ALTERAÇÕES: QUALQUER ALTERAÇÃO NA DATA/HORÁRIO DA FESTA DEVE SER COMUNICADA COM NO MÍNIMO 15 DIAS DE ANTECEDÊNCIA.
 
 5. ALIMENTAÇÃO: A CONTRATANTE COMPROMETE-SE A FORNECER ALIMENTAÇÃO ADEQUADA PARA OS FUNCIONÁRIOS DA CONTRATADA QUE ESTIVEREM DESEMPENHANDO SUAS FUNÇÕES DURANTE A REALIZAÇÃO DO EVENTO.
 
@@ -125,8 +120,8 @@ CLÁUSULA 5ª – DA RETRIBUIÇÃO
 
 EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA TOTAL DE ${money(total)}, ESPECIFICADOS:
 
-1. PACOTE ${(packageName || 'CONTRATADO').toUpperCase()}: ${money(Math.max(0, total - Number(form.deposit_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
-2. TAXA DE DESLOCAMENTO: ${money(Number(form.deposit_amount || 0))}
+1. PACOTE ${(packageName || 'CONTRATADO').toUpperCase()}: ${money(Math.max(0, total - Number(form.displacement_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
+2. TAXA DE DESLOCAMENTO: ${money(Number(form.displacement_amount || 0))}
 
 O PAGAMENTO ${Number(form.balance_amount || 0) <= 0 ? 'INTEGRAL FOI REALIZADO' : 'SERÁ REALIZADO CONFORME AS CONDIÇÕES INFORMADAS'}${form.deposit_date ? ` NA DATA DE ${dateLabel(form.deposit_date)}` : ''}.
 
@@ -195,6 +190,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       end_time: event.end_time.slice(0, 5),
       event_location: event.location || '',
       total_amount: event.total_amount || pack?.price || 0,
+      displacement_amount: 0,
       balance_amount: Math.max(0, event.total_amount - event.received_amount),
       included_activities: pack?.activities || [],
     });
@@ -205,7 +201,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     if (!pack) return;
     patch({
       package_id: pack.id,
-      total_amount: pack.price > 0 ? pack.price : form.total_amount,
+      total_amount: pack.price > 0 ? pack.price + Number(form.displacement_amount || 0) : form.total_amount,
       included_activities: [...pack.activities],
       additional_payment_terms: pack.notes || '',
     });
@@ -228,16 +224,15 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       contractor_name: contract.contractor_name, contractor_document: contract.contractor_document || '',
       contractor_rg: contract.contractor_rg || '', contractor_address: contract.contractor_address || '',
       contractor_phone: contract.contractor_phone || '', contractor_email: contract.contractor_email || '',
-      celebrant_name: contract.celebrant_name || '', children_estimate: contract.children_estimate || 0,
-      age_range: contract.age_range || '', event_theme: contract.event_theme || '', event_date: contract.event_date || '',
+      children_estimate: contract.children_estimate || 0, event_date: contract.event_date || '',
       start_time: contract.start_time?.slice(0, 5) || '', end_time: contract.end_time?.slice(0, 5) || '',
       event_location: contract.event_location || '', event_location_type: contract.event_location_type || '',
       team_size: contract.team_size, included_activities: contract.included_activities || [],
       included_equipment: contract.included_equipment || [], total_amount: contract.total_amount,
-      deposit_amount: contract.deposit_amount, deposit_date: contract.deposit_date || '',
+      deposit_amount: contract.deposit_amount, displacement_amount: contract.displacement_amount || 0, deposit_date: contract.deposit_date || '',
       balance_amount: contract.balance_amount, balance_due_date: contract.balance_due_date || '',
       payment_method: contract.payment_method || 'PIX', pix_key: contract.pix_key || company?.pix_key || '',
-      additional_payment_terms: contract.additional_payment_terms || '', arrival_minutes: contract.arrival_minutes,
+      additional_payment_terms: contract.additional_payment_terms || '',
       catering_required: contract.catering_required, image_authorized: contract.image_authorized,
       additional_observations: contract.additional_observations || '', contract_details: contract.contract_details || '',
     });
@@ -283,8 +278,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       contractor_name: contract.contractor_name, contractor_document: contract.contractor_document || '',
       contractor_rg: contract.contractor_rg || '', contractor_address: contract.contractor_address || '',
       contractor_phone: contract.contractor_phone || '', contractor_email: contract.contractor_email || '',
-      celebrant_name: contract.celebrant_name || '', children_estimate: contract.children_estimate || 0,
-      age_range: contract.age_range || '', event_theme: contract.event_theme || '', event_date: contract.event_date || '',
+      children_estimate: contract.children_estimate || 0, event_date: contract.event_date || '',
       start_time: contract.start_time?.slice(0, 5) || '', end_time: contract.end_time?.slice(0, 5) || '',
       event_location: contract.event_location || '', event_location_type: contract.event_location_type || '',
       team_size: contract.team_size, included_activities: contract.included_activities || [],
@@ -292,7 +286,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       deposit_amount: contract.deposit_amount, deposit_date: contract.deposit_date || '',
       balance_amount: contract.balance_amount, balance_due_date: contract.balance_due_date || '',
       payment_method: contract.payment_method || 'PIX', pix_key: contract.pix_key || company?.pix_key || '',
-      additional_payment_terms: contract.additional_payment_terms || '', arrival_minutes: contract.arrival_minutes,
+      additional_payment_terms: contract.additional_payment_terms || '',
       catering_required: contract.catering_required, image_authorized: contract.image_authorized,
       additional_observations: contract.additional_observations || '', contract_details: contract.contract_details || '',
     });
@@ -403,12 +397,8 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">3. Dados da festa</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label><span className="text-sm font-medium">Aniversariante(s)</span><input value={form.celebrant_name || ''} onChange={(e) => patch({ celebrant_name: e.target.value })} className={input} /></label>
                     <label><span className="text-sm font-medium">Estimativa de crianças</span><input type="number" min="0" value={form.children_estimate || 0} onChange={(e) => patch({ children_estimate: Number(e.target.value) })} className={input} /></label>
-                    <label><span className="text-sm font-medium">Faixa etária</span><input value={form.age_range || ''} onChange={(e) => patch({ age_range: e.target.value })} placeholder="Ex.: 4 a 8 anos" className={input} /></label>
-                    <label><span className="text-sm font-medium">Tema</span><input value={form.event_theme || ''} onChange={(e) => patch({ event_theme: e.target.value })} className={input} /></label>
                     <label><span className="text-sm font-medium">Data</span><input type="date" value={form.event_date || ''} onChange={(e) => patch({ event_date: e.target.value })} className={input} /></label>
-                    <label><span className="text-sm font-medium">Tipo de local</span><input value={form.event_location_type || ''} onChange={(e) => patch({ event_location_type: e.target.value })} placeholder="Residência, salão..." className={input} /></label>
                     <label><span className="text-sm font-medium">Início</span><input type="time" value={form.start_time || ''} onChange={(e) => patch({ start_time: e.target.value })} className={input} /></label>
                     <label><span className="text-sm font-medium">Término</span><input type="time" value={form.end_time || ''} onChange={(e) => patch({ end_time: e.target.value })} className={input} /></label>
                     <label className="sm:col-span-2"><span className="text-sm font-medium">Local do evento</span><input value={form.event_location || ''} onChange={(e) => patch({ event_location: e.target.value })} className={input} /></label>
@@ -426,7 +416,8 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">5. Valores e pagamento</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label><span className="text-sm font-medium">Valor total</span><input type="number" step="0.01" value={form.total_amount} onChange={(e) => patch({ total_amount: Number(e.target.value) })} className={input} /></label>
+                    <label><span className="text-sm font-medium">Valor do pacote</span><input type="number" step="0.01" value={Math.max(0, Number(form.total_amount) - Number(form.displacement_amount || 0))} onChange={(e) => patch({ total_amount: Number(e.target.value) + Number(form.displacement_amount || 0) })} className={input} /></label>
+                    <label><span className="text-sm font-medium">Valor de deslocamento</span><input type="number" step="0.01" min="0" value={form.displacement_amount} onChange={(e) => { const displacement = Number(e.target.value); patch({ displacement_amount: displacement, total_amount: Math.max(0, Number(form.total_amount) - Number(form.displacement_amount || 0)) + displacement }); }} className={input} /></label>
                     <label><span className="text-sm font-medium">Sinal / reserva</span><input type="number" step="0.01" value={form.deposit_amount} onChange={(e) => patch({ deposit_amount: Number(e.target.value), balance_amount: Math.max(0, Number(form.total_amount) - Number(e.target.value)) })} className={input} /></label>
                     <label><span className="text-sm font-medium">Data do sinal</span><input type="date" value={form.deposit_date || ''} onChange={(e) => patch({ deposit_date: e.target.value })} className={input} /></label>
                     <label><span className="text-sm font-medium">Vencimento do saldo</span><input type="date" value={form.balance_due_date || ''} onChange={(e) => patch({ balance_due_date: e.target.value })} className={input} /></label>
@@ -442,10 +433,9 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                   <div className="mt-4 space-y-4">
                     <label className="block"><span className="text-sm font-medium">Condições específicas do contrato</span><textarea value={form.contract_details || ''} onChange={(e) => patch({ contract_details: e.target.value })} placeholder="Ex.: regras específicas de cancelamento, remarcação ou contratação..." className={textarea} /></label>
                     <label className="block"><span className="text-sm font-medium">Observações adicionais</span><textarea value={form.additional_observations || ''} onChange={(e) => patch({ additional_observations: e.target.value })} placeholder="Tudo que foi combinado e precisa aparecer no contrato..." className={textarea + ' min-h-32'} /></label>
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3 text-sm"><input type="checkbox" checked={form.catering_required} onChange={(e) => patch({ catering_required: e.target.checked })} /> Alimentação da equipe</label>
                       <label className="flex items-center gap-2 rounded-xl bg-slate-50 p-3 text-sm"><input type="checkbox" checked={form.image_authorized} onChange={(e) => patch({ image_authorized: e.target.checked })} /> Autoriza uso de imagem</label>
-                      <label><span className="text-sm font-medium">Antecedência de chegada</span><input type="number" min="0" value={form.arrival_minutes} onChange={(e) => patch({ arrival_minutes: Number(e.target.value) })} className={input} /></label>
                     </div>
                   </div>
                 </section>
