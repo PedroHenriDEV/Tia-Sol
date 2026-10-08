@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/auth/login-form';
 import { Logo } from '@/components/ui/logo';
-import Link from 'next/link';
 
 export default function LoginPage() {
   return (
@@ -17,18 +16,27 @@ export default function LoginPage() {
         </div>
         <div className="relative flex items-center gap-2 text-xs text-[var(--muted)]"><span className="h-2 w-2 rounded-full bg-[var(--secondary)]" />Acesso privado · Tia Sol</div>
       </section>
+
       <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8">
         <div className="w-full max-w-[400px]">
           <div className="mb-9 lg:hidden"><Logo variant="login" linked={false} /></div>
+
           <div className="surface p-6 sm:p-8">
             <p className="section-label">Primeiro acesso</p>
             <h2 className="display-title mt-2 text-3xl">Vamos começar.</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">Se este é o primeiro acesso da Tia Sol, crie o usuário e a senha para entrar no sistema.</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+              Se este é o primeiro acesso da Tia Sol, crie o usuário e a senha para entrar no sistema.
+            </p>
+
             <div className="mt-7">
-              <Link href="/cadastro" className="flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+              <a
+                href="/cadastro"
+                className="relative z-10 flex min-h-11 w-full cursor-pointer items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              >
                 Criar primeiro acesso
-              </Link>
+              </a>
             </div>
+
             <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
               <p className="text-xs text-[var(--muted)]">Já possui acesso?</p>
               <div className="mt-1">
@@ -36,6 +44,7 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
+
           <p className="mt-5 text-center text-[11px] text-[var(--muted)]">Seu espaço de organização para a Tia Sol.</p>
         </div>
       </section>
