@@ -79,12 +79,11 @@ function createContractPdfBlob(text: string) {
       || /^\d+\. (CONTRATANTE|CONTRATADA)$/.test(value);
   };
 
-  const isLabeledLine = (line: string) => {
+  const splitLabel = (line: string) => {
     const value = line.trim();
-    return /^•\s+[^:]+:/.test(value)
-      || /^\d+\.\s+[^:]+:/.test(value)
-      || /^SERVIÇO PRESTADO:/.test(value)
-      || /^RECREAÇÃO INFANTIL ABRANGENDO:/.test(value);
+    const match = value.match(/^(•\s+[^:]+:|\d+\.\s+[^:]+:|SERVIÇO PRESTADO:|RECREAÇÃO INFANTIL ABRANGENDO:)(.*)$/);
+    if (!match) return null;
+    return { label: match[1], rest: match[2] };
   };
 
   const wrapLine = (line: string, maxChars: number) => {
@@ -106,14 +105,32 @@ function createContractPdfBlob(text: string) {
     return result;
   };
 
-  const styledLines: Array<{ text: string; kind: 'title' | 'heading' | 'body' }> = [];
+  const styledLines: Array<{
+    text: string;
+    kind: 'title' | 'heading' | 'body' | 'label';
+    label?: string;
+    rest?: string;
+  }> = [];
+
   rawLines.forEach((line) => {
     const value = line.trim();
-    const kind = isTitle(value) ? 'title' : isHeading(value) ? 'heading' : isLabeledLine(value) ? 'heading' : 'body';
-    const wrapped = wrapLine(line, kind === 'title' ? 72 : kind === 'heading' ? 82 : 92);
-    wrapped.forEach((item, index) => {
-      styledLines.push({ text: item, kind: index === 0 ? kind : 'body' });
-    });
+    if (isTitle(value)) {
+      styledLines.push({ text: value, kind: 'title' });
+      return;
+    }
+    if (isHeading(value)) {
+      styledLines.push({ text: value, kind: 'heading' });
+      return;
+    }
+
+    const labeled = splitLabel(value);
+    if (labeled) {
+      styledLines.push({ text: value, kind: 'label', label: labeled.label, rest: labeled.rest });
+      return;
+    }
+
+    const wrapped = wrapLine(line, 92);
+    wrapped.forEach((item) => styledLines.push({ text: item, kind: 'body' }));
   });
 
   const pages: typeof styledLines[] = [];
@@ -166,6 +183,7 @@ function createContractPdfBlob(text: string) {
     pageLines.forEach((line, index) => {
       const isTitleLine = line.kind === 'title';
       const isHeadingLine = line.kind === 'heading';
+      const isLabelLine = line.kind === 'label';
       const fontSize = isTitleLine ? 15 : isHeadingLine ? 11 : 9.5;
       const leading = isTitleLine ? 20 : isHeadingLine ? 16 : 13;
       if (index > 0) commands.push(`0 -${leading} Td`);
@@ -176,30 +194,16 @@ function createContractPdfBlob(text: string) {
         return;
       }
 
-      const value = line.text.trim();
-      const bulletMatch = value.match(/^(•\\s+)([^:]+:)(.*)$/);
-      const numberedMatch = value.match(/^(\\d+\\.\\s+)([^:]+:)(.*)$/);
-      const serviceMatch = value.match(/^(SERVIÇO PRESTADO:)(.*)$/);
-      const recreationMatch = value.match(/^(RECREAÇÃO INFANTIL ABRANGENDO:)(.*)$/);
-      const match = bulletMatch || numberedMatch || serviceMatch || recreationMatch;
-
-      commands.push(`/F1 ${fontSize} Tf`);
-      if (!match) {
-        commands.push('(' + escapePdf(line.text) + ') Tj');
+      if (isLabelLine && line.label !== undefined) {
+        commands.push(`/F2 ${fontSize} Tf`);
+        commands.push('(' + escapePdf(line.label) + ') Tj');
+        commands.push(`/F1 ${fontSize} Tf`);
+        if (line.rest) commands.push('(' + escapePdf(line.rest) + ') Tj');
         return;
       }
 
-      const prefix = bulletMatch || numberedMatch ? match[1] : '';
-      const label = bulletMatch || numberedMatch ? match[2] : match[1];
-      const rest = bulletMatch || numberedMatch ? match[3] : match[2];
-
-      commands.push('(' + escapePdf(prefix) + ') Tj');
-      commands.push('/F2 ' + fontSize + ' Tf');
-      commands.push('(' + escapePdf(label) + ') Tj');
-      if (rest) {
-        commands.push('/F1 ' + fontSize + ' Tf');
-        commands.push('(' + escapePdf(rest) + ') Tj');
-      }
+      commands.push(`/F1 ${fontSize} Tf`);
+      commands.push('(' + escapePdf(line.text) + ') Tj');
     });
     commands.push('ET');
 
