@@ -19,19 +19,23 @@ export async function updateSession(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getUser();
-  const isLogin = request.nextUrl.pathname.startsWith('/login');
-  const isProtected = !isLogin && request.nextUrl.pathname !== '/';
-  if (!data.user && isProtected) {
+  const pathname = request.nextUrl.pathname;
+  const isPublic = pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/cadastro');
+
+  if (!data.user && !isPublic) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = '/login';
-    redirect.searchParams.set('next', request.nextUrl.pathname);
+    redirect.search = '';
+    redirect.searchParams.set('next', pathname);
     return NextResponse.redirect(redirect);
   }
-  if (data.user && isLogin) {
+
+  if (data.user && pathname.startsWith('/login')) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = '/dashboard';
     redirect.search = '';
     return NextResponse.redirect(redirect);
   }
+
   return response;
 }
