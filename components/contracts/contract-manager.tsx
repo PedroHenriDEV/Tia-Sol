@@ -147,6 +147,14 @@ function createContractPdfBlob(text: string) {
     return result;
   };
 
+  const pdfTextWidth = (value: string, fontSize: number, bold = false) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) return value.length * fontSize * 0.5;
+    context.font = `${bold ? 'bold ' : ''}${fontSize}px Helvetica, Arial, sans-serif`;
+    return context.measureText(value).width;
+  };
+
   const styledLines: Array<{
     text: string;
     kind: 'title' | 'heading' | 'body' | 'label';
@@ -228,14 +236,6 @@ function createContractPdfBlob(text: string) {
       else result += String.fromCharCode(byte);
     }
     return result;
-  };
-
-  const pdfTextWidth = (value: string, fontSize: number, bold = false) => {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) return value.length * fontSize * 0.5;
-    context.font = `${bold ? 'bold ' : ''}${fontSize}px Helvetica, Arial, sans-serif`;
-    return context.measureText(value).width;
   };
 
   const pageIds: number[] = [];
