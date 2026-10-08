@@ -21,13 +21,19 @@ export default function LoginPage() {
         <div className="w-full max-w-[400px]">
           <div className="mb-9 lg:hidden"><Logo variant="login" linked={false} /></div>
           <div className="surface p-6 sm:p-8">
-            <p className="section-label">Acesso privado</p>
-            <h2 className="display-title mt-2 text-3xl">Bem-vinda de volta.</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">Entre para continuar organizando suas festas.</p>
-            <div className="mt-7"><Suspense><LoginForm /></Suspense></div>
+            <p className="section-label">Primeiro acesso</p>
+            <h2 className="display-title mt-2 text-3xl">Vamos começar.</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">Se este é o primeiro acesso da Tia Sol, crie o usuário e a senha para entrar no sistema.</p>
+            <div className="mt-7">
+              <Link href="/cadastro" className="flex w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90">
+                Criar primeiro acesso
+              </Link>
+            </div>
             <div className="mt-6 border-t border-[var(--border)] pt-5 text-center">
-              <p className="text-xs text-[var(--muted)]">Primeiro acesso?</p>
-              <Link href="/cadastro" className="mt-1 inline-block text-sm font-semibold text-[var(--primary)]">Criar usuário e senha</Link>
+              <p className="text-xs text-[var(--muted)]">Já possui acesso?</p>
+              <div className="mt-1">
+                <Suspense><LoginForm /></Suspense>
+              </div>
             </div>
           </div>
           <p className="mt-5 text-center text-[11px] text-[var(--muted)]">Seu espaço de organização para a Tia Sol.</p>
