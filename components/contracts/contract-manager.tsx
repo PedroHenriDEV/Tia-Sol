@@ -300,7 +300,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       event_location: contract.event_location || '', event_location_type: contract.event_location_type || '',
       team_size: contract.team_size, included_activities: contract.included_activities || [],
       included_equipment: contract.included_equipment || [], total_amount: contract.total_amount,
-      deposit_amount: contract.deposit_amount, deposit_date: contract.deposit_date || '',
+      deposit_amount: contract.deposit_amount, displacement_amount: contract.displacement_amount || 0, deposit_date: contract.deposit_date || '',
       balance_amount: contract.balance_amount, balance_due_date: contract.balance_due_date || '',
       payment_method: contract.payment_method || 'PIX', pix_key: contract.pix_key || company?.pix_key || '',
       additional_payment_terms: contract.additional_payment_terms || '',
