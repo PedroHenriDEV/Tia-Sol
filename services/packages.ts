@@ -24,43 +24,16 @@ export async function getCurrentCompanyId(supabase: SupabaseClient): Promise<str
   return membership.company_id as string;
 }
 
-const DEFAULT_PACKAGES: PackageInput[] = [
-  { name: 'Pacote Mercúrio', description: 'A decolagem perfeita para a diversão começar!', price: '0', duration: '3', activities: ['Pintura facial/corporal ou tatuagens temporárias', 'Escultura de balões', 'Brincadeiras', 'Momento do picnic com alimentos fornecidos na festa (opcional)', 'Parabéns animado (dentro do horário da recreação)'], notes: '', active: true },
-  { name: 'Pacote Estrela', description: 'Para crianças que brilham com alegria!', price: '0', duration: '3', activities: ['Pintura facial/corporal ou tatuagens temporárias', 'Oficina de stressball', 'Brincadeiras', 'Caça ao tesouro', 'Momento do picnic com alimentos fornecidos na festa (opcional)', 'Parabéns animado (dentro do horário da recreação)'], notes: '', active: true },
-  { name: 'Pacote Astro', description: 'Perfeito para pequenos astros!', price: '0', duration: '3', activities: ['Pintura facial/corporal ou tatuagens temporárias', 'Oficina de pintura no gesso', 'Brincadeiras', 'Caça ao tesouro', 'Momento do picnic com alimentos fornecidos na festa (opcional)', 'Parabéns animado (dentro do horário da recreação)'], notes: '', active: true },
-  { name: 'Pacote Galáxia', description: 'Diversão de outro planeta!', price: '0', duration: '3', activities: ['Pintura facial/corporal ou tatuagens temporárias', 'Oficina de chaveiros personalizados ou pulseiras', 'Brincadeiras', 'Caça ao tesouro', 'Momento do picnic com alimentos fornecidos na festa (opcional)', 'Parabéns animado (dentro do horário da recreação)'], notes: '', active: true },
-  { name: 'Pacote Universo', description: 'Um super pacote para super crianças!', price: '0', duration: '3', activities: ['Pintura facial/corporal ou tatuagens temporárias', 'Oficina de slime', 'Brincadeiras', 'Caça ao tesouro', 'Momento do picnic com alimentos fornecidos na festa (opcional)', 'Parabéns animado (dentro do horário da recreação)'], notes: '', active: true },
-  { name: 'Pacote Personalizado', description: 'Você escolhe, a gente realiza!', price: '0', duration: '3', activities: [], notes: 'Cada evento é único. Escolha as atividades, defina o tempo do evento e monte a programação ideal com a ajuda da Tia Sol.', active: true },
-];
-
 export async function listPackages(supabase: SupabaseClient): Promise<Package[]> {
   const companyId = await getCurrentCompanyId(supabase);
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('packages')
     .select('*')
     .eq('company_id', companyId)
+    .eq('active', true)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-
-  // A empresa pode ter sido criada depois das migrations de catálogo.
-  // Nesse caso, cria automaticamente o catálogo oficial no primeiro carregamento.
-  if (!data?.length) {
-    const payload = DEFAULT_PACKAGES.map((item) => ({
-      company_id: companyId,
-      name: item.name,
-      description: item.description || null,
-      price: Number(item.price),
-      duration: Number(item.duration),
-      activities: item.activities,
-      notes: item.notes || null,
-      active: true,
-    }));
-
-    const seeded = await supabase.from('packages').insert(payload).select();
-    if (seeded.error) throw seeded.error;
-    data = seeded.data;
-  }
 
   // O banco pode conter registros históricos com diferenças apenas de capitalização.
   // Para a operação da Tia Sol, cada pacote deve aparecer uma única vez.
@@ -70,13 +43,13 @@ export async function listPackages(supabase: SupabaseClient): Promise<Package[]>
     const key = item.name.trim().toLocaleLowerCase('pt-BR');
     const current = uniquePackages.get(key);
 
-    // Prefere o registro ativo e, em seguida, o nome oficial "Pacote ...".
-    if (!current || (item.active && !current.active) || (/^Pacote\b/.test(item.name) && !/^Pacote\b/.test(current.name))) {
+    // Prefere o nome oficial "Pacote ..." quando houver duplicidade histórica.
+    if (!current || (/^Pacote\b/.test(item.name) && !/^Pacote\b/.test(current.name))) {
       uniquePackages.set(key, item);
     }
   }
 
-  return Array.from(uniquePackages.values()).filter((item) => item.active);
+  return Array.from(uniquePackages.values());
 }
 
 export async function createPackage(supabase: SupabaseClient, input: PackageInput): Promise<Package> {
