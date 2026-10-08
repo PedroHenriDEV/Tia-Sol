@@ -1,10 +1,7 @@
 import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
-import { SignupForm } from '@/components/auth/signup-form';
 
 export default function CadastroPage() {
-  const signupEnabled = process.env.NEXT_PUBLIC_SIGNUP_ENABLED !== 'false';
-
   return (
     <main className="grid min-h-screen bg-[var(--background)] lg:grid-cols-[1.15fr_.85fr]">
       <section className="relative hidden overflow-hidden border-r bg-[var(--card)] px-10 py-10 lg:flex lg:flex-col lg:justify-between xl:px-16" style={{ borderColor: 'var(--border)' }}>
@@ -20,19 +17,12 @@ export default function CadastroPage() {
         <div className="w-full max-w-[400px]">
           <div className="mb-9 lg:hidden"><Logo variant="login" linked={false} /></div>
           <div className="surface p-6 sm:p-8">
-            <p className="section-label">{signupEnabled ? 'Criar acesso' : 'Acesso privado'}</p>
-            <h2 className="display-title mt-2 text-3xl">{signupEnabled ? 'Bem-vinda.' : 'Cadastro encerrado.'}</h2>
-            {signupEnabled ? (
-              <>
-                <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">Esse acesso será usado para entrar no sistema.</p>
-                <div className="mt-7"><SignupForm /></div>
-              </>
-            ) : (
-              <div className="mt-5 space-y-5">
-                <p className="text-sm leading-6 text-[var(--muted-foreground)]">O cadastro de novos usuários está desativado. Se você já possui acesso, entre normalmente.</p>
-                <Link href="/login" className="button-primary inline-flex w-full justify-center">Ir para o login</Link>
-              </div>
-            )}
+            <p className="section-label">Acesso privado</p>
+            <h2 className="display-title mt-2 text-3xl">Cadastro encerrado.</h2>
+            <div className="mt-5 space-y-5">
+              <p className="text-sm leading-6 text-[var(--muted-foreground)]">O cadastro de novos usuários está desativado. Este sistema possui acesso privado e não permite novos cadastros.</p>
+              <Link href="/login" className="button-primary inline-flex w-full justify-center">Ir para o login</Link>
+            </div>
           </div>
         </div>
       </section>
