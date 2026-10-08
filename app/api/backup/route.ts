@@ -9,6 +9,7 @@ const TABLES = [
   'materials',
   'material_movements',
   'contracts',
+  'settings',
 ] as const;
 
 async function getBackupData() {
