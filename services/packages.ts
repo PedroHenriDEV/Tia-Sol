@@ -30,7 +30,6 @@ export async function listPackages(supabase: SupabaseClient): Promise<Package[]>
     .from('packages')
     .select('*')
     .eq('company_id', companyId)
-    .eq('active', true)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -43,13 +42,13 @@ export async function listPackages(supabase: SupabaseClient): Promise<Package[]>
     const key = item.name.trim().toLocaleLowerCase('pt-BR');
     const current = uniquePackages.get(key);
 
-    // Prefere o nome oficial "Pacote ..." quando houver duplicata.
-    if (!current || /^Pacote\b/.test(item.name)) {
+    // Prefere o registro ativo e, em seguida, o nome oficial "Pacote ...".
+    if (!current || (item.active && !current.active) || (/^Pacote\b/.test(item.name) && !/^Pacote\b/.test(current.name))) {
       uniquePackages.set(key, item);
     }
   }
 
-  return Array.from(uniquePackages.values());
+  return Array.from(uniquePackages.values()).filter((item) => item.active);
 }
 
 export async function createPackage(supabase: SupabaseClient, input: PackageInput): Promise<Package> {
