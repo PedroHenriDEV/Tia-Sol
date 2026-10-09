@@ -742,14 +742,14 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-0 sm:p-5">
-          <div className="mx-auto my-0 min-h-screen w-full max-w-7xl bg-white p-4 shadow-2xl sm:my-4 sm:min-h-0 sm:rounded-3xl sm:p-6">
-            <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/40 p-0 sm:p-5">
+          <div className="mx-auto flex h-dvh max-h-dvh w-full max-w-7xl flex-col overflow-hidden bg-white p-4 shadow-2xl sm:h-[calc(100dvh-2.5rem)] sm:rounded-3xl sm:p-6">
+            <div className="mb-5 flex shrink-0 items-start justify-between gap-4">
               <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-600">Contrato {number}</p><h2 className="mt-1 text-xl font-semibold text-slate-900">{editing ? 'Editar contrato' : 'Novo contrato'}</h2><p className="text-sm text-slate-500">Preencha os dados e revise a prévia antes de salvar.</p></div>
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid min-w-0 grid-cols-1 items-start gap-6">
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-5">
               <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
@@ -829,11 +829,11 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               </aside>
             </div>
 
-            {feedback && <div className="mt-5 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
-            <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
-              <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancelar</button>
-              <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"><Copy size={16} /> Copiar texto</button>
-              <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
+            {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
+            <div className="sticky bottom-0 z-10 mt-3 flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2">
+              <button type="button" onClick={() => setOpen(false)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto">Cancelar</button>
+              <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto"><Copy size={16} /> Copiar texto</button>
+              <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
             </div>
           </div>
         </div>
