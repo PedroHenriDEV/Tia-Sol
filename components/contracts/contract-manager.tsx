@@ -363,7 +363,7 @@ function isContractHeading(line: string) {
   return value === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO'
     || value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
     || /^CLÁUSULA\s+\d+ª\s*[–-]\s*/.test(value)
-    || /^\\d+\\. (CONTRATANTE|CONTRATADA)$/.test(value);
+    || /^\d+\. (CONTRATANTE|CONTRATADA)$/.test(value);
 }
 
 function ContractPreview({ text }: { text: string }) {
