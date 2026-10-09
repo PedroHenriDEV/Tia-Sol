@@ -871,6 +871,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </div>
               </aside>
             </div>
+            </div>
 
             {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
             <div className="relative z-10 mt-3 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2">
