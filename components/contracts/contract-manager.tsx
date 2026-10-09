@@ -554,7 +554,9 @@ FICA DESDE JÁ ELEITO O FORO DA COMARCA DE ${company?.city || 'BELO HORIZONTE'} 
 
 ${form.contract_details?.trim() ? `CONDIÇÕES ESPECÍFICAS ACORDADAS:\n${form.contract_details.trim()}\n\n` : ''}${form.additional_observations?.trim() ? `OBSERVAÇÕES ADICIONAIS:\n${form.additional_observations.trim()}\n\n` : ''}JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
 
-${name.toUpperCase()} — RESPONSÁVEL: ${responsible}
+LARISSA GARCIA — RESPONSÁVEL: LARISSA GARCIA RIBEIRO DE ALMEIDA
+
+TIA SOL RECREAÇÕES — RESPONSÁVEL: LARISSA GARCIA RIBEIRO DE ALMEIDA
 
 ${form.contractor_name || 'CONTRATANTE'}
 
