@@ -490,8 +490,6 @@ EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA T
 1. PACOTE ${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: ${money(Math.max(0, total - Number(form.displacement_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
 2. TAXA DE DESLOCAMENTO: ${money(Number(form.displacement_amount || 0))}
 
-O PAGAMENTO ${Number(form.balance_amount || 0) <= 0 ? 'INTEGRAL FOI REALIZADO' : 'SERÁ REALIZADO CONFORME AS CONDIÇÕES INFORMADAS'}${form.deposit_date ? ` NA DATA DE ${dateLabel(form.deposit_date)}` : ''}.
-
 O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.\n\nCLÁUSULA 6ª - DA RESCISÃO IMOTIVADA
 
 1. DESISTÊNCIA: DESISTÊNCIA POR PARTE DO CONTRATANTE RESULTARÁ NA PERDA DO SINAL.
