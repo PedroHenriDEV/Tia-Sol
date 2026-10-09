@@ -354,8 +354,8 @@ function dateLabel(value?: string | null) {
   return new Intl.DateTimeFormat('pt-BR').format(new Date(value + 'T12:00:00'));
 }
 
-function companyName(company: Company | null) {
-  return company?.trade_name || company?.legal_name || 'TIA SOL RECREAÇÃO INFANTIL LTDA';
+function companyName(_company: Company | null) {
+  return 'TIA SOL & CIA';
 }
 
 function isContractHeading(line: string) {
@@ -406,10 +406,11 @@ function ContractPreview({ text }: { text: string }) {
   );
 }
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
-  const name = companyName(company);
-  const cnpj = company?.tax_id || 'não informado';
-  const companyAddress = company?.address || 'não informado';
-  const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
+  const name = 'TIA SOL & CIA';
+  const responsible = 'LARISSA GARCIA RIBEIRO DE ALMEIDA';
+  const cnpj = '57.195.397/0001-31';
+  const companyAddress = 'AV. NOSSA SENHORA DA PIEDADE, 167 — AARÃO REIS';
+  const companyCityState = '';
   const activities = form.included_activities.length
     ? form.included_activities
         .flatMap((item) => cleanContractText(item).split('\n'))
@@ -511,7 +512,7 @@ FICA DESDE JÁ ELEITO O FORO DA COMARCA DE ${company?.city || 'BELO HORIZONTE'} 
 
 JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
 
-${name.toUpperCase()} (${company?.legal_name || 'LARISSA GARCIA RIBEIRO DE ALMEIDA'})
+${name.toUpperCase()} — RESPONSÁVEL: ${responsible}
 
 ${form.contractor_name || 'CONTRATANTE'}
 
