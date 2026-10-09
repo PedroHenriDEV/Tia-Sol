@@ -439,7 +439,7 @@ IDENTIFICAÇÃO DAS PARTES CONTRATANTES
 • E-MAIL: ${form.contractor_email || 'não informado'}
 
 2. CONTRATADA
-• NOME: ${name}
+• NOME: ${name} (${responsible})
 • ENDEREÇO: ${companyAddress}${companyCityState ? ` - ${companyCityState}` : ''}
 • CNPJ: ${cnpj}
 
