@@ -41,7 +41,14 @@ export async function createContract(supabase: SupabaseClient, input: ContractIn
     contract_year: year,
     contract_number: nextNumber,
   };
-  const { data, error } = await supabase.from('contracts').insert(payload).select(contractSelect).single();
+  let { data, error } = await supabase.from('contracts').insert(payload).select(contractSelect).single();
+  // Compatibilidade com bancos ainda sem a migration displacement_amount.
+  if (error?.message?.includes("Could not find the 'displacement_amount' column")) {
+    const { displacement_amount: _displacementAmount, ...legacyPayload } = payload;
+    const retry = await supabase.from('contracts').insert(legacyPayload).select(contractSelect).single();
+    data = retry.data;
+    error = retry.error;
+  }
   if (!error && data) return data as ContractRecord;
 
   // A restrição UNIQUE no banco protege contra numeração duplicada em concorrência.
@@ -93,7 +100,14 @@ export async function updateContract(supabase: SupabaseClient, id: string, input
     generated_text: generatedText,
     updated_at: new Date().toISOString(),
   };
-  const { data, error } = await supabase.from('contracts').update(payload).eq('id', id).select(contractSelect).single();
+  let { data, error } = await supabase.from('contracts').update(payload).eq('id', id).select(contractSelect).single();
+  // Compatibilidade com bancos ainda sem a migration displacement_amount.
+  if (error?.message?.includes("Could not find the 'displacement_amount' column")) {
+    const { displacement_amount: _displacementAmount, ...legacyPayload } = payload;
+    const retry = await supabase.from('contracts').update(legacyPayload).eq('id', id).select(contractSelect).single();
+    data = retry.data;
+    error = retry.error;
+  }
   if (error) throw error;
   return data as ContractRecord;
 }
