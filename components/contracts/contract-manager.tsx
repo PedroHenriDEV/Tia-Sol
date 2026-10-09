@@ -742,14 +742,14 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/40 p-0 sm:items-center sm:p-5">
-          <div className="max-h-[95vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:max-w-6xl sm:rounded-3xl sm:p-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 p-0 sm:p-5">
+          <div className="mx-auto my-0 min-h-screen w-full max-w-7xl bg-white p-4 shadow-2xl sm:my-4 sm:min-h-0 sm:rounded-3xl sm:p-6">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-600">Contrato {number}</p><h2 className="mt-1 text-xl font-semibold text-slate-900">{editing ? 'Editar contrato' : 'Novo contrato'}</h2><p className="text-sm text-slate-500">Preencha os dados e revise a prévia antes de salvar.</p></div>
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,.9fr)]">
               <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
@@ -819,10 +819,10 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
               </div>
 
-              <aside className="min-w-0 lg:sticky lg:top-0 lg:self-start">
+              <aside className="min-w-0 w-full">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  <div className={preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72'}>
+                  <div className={preview ? 'mt-4 max-h-[75vh] overflow-y-auto' : 'mt-4 max-h-72 overflow-y-auto'}>
                     <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
                   </div>
                 </div>
