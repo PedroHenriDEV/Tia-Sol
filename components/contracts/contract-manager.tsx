@@ -374,10 +374,13 @@ function companyName(_company: Company | null) {
   return 'TIA SOL & CIA';
 }
 
+function isContractTitle(line: string) {
+  return line.trim() === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO';
+}
+
 function isContractHeading(line: string) {
   const value = line.trim();
-  return value === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO'
-    || value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
+  return value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
     || /^CLÁUSULA\s+\d+ª\s*[–-]\s*/.test(value)
     || /^\d+\. (CONTRATANTE|CONTRATADA)$/.test(value);
 }
@@ -388,8 +391,11 @@ function ContractPreview({ text }: { text: string }) {
       {cleanContractText(text).split('\n').map((line, index) => {
         const value = line.trim();
         if (!value) return <div key={index} className="h-3" />;
+        if (isContractTitle(value)) {
+          return <h1 key={index} className="mb-6 border-b-2 border-slate-900 pb-4 text-center text-base font-black leading-snug tracking-wide text-slate-950 sm:text-lg">{value}</h1>;
+        }
         if (isContractHeading(value)) {
-          return <div key={index} className="mt-5 border-b-2 border-slate-200 pb-2 text-[14px] font-extrabold uppercase tracking-wide text-slate-950">{value}</div>;
+          return <h2 key={index} className="mt-6 mb-3 border-b border-slate-300 pb-2 text-[12px] font-extrabold uppercase leading-snug tracking-wide text-slate-950 sm:text-[13px]">{value}</h2>;
         }
         if (/^• /.test(value)) {
           const content = value.slice(2);
@@ -786,7 +792,8 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             </div>
 
             <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-5">
-              <div className="min-w-0 space-y-5">
+              <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+                <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -853,11 +860,11 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                     </div>
                   </div>
                 </section>
-              </div>
+                </div>
 
-              <aside className="min-w-0 w-full">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-slate-900">Prévia completa do contrato</h3><p className="text-xs text-slate-500">Documento completo, exibido abaixo dos campos e sem corte de altura.</p></div><button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
+              <aside className="min-w-0 w-full xl:sticky xl:top-0">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:max-h-[calc(100dvh-13rem)] xl:overflow-y-auto">
+                  <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-slate-900">Prévia do documento</h3><p className="text-xs text-slate-500">Prévia ao vivo. Confira o documento enquanto preenche os campos.</p></div><button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
                   {preview && <div className="mt-4 w-full min-w-0">
                     <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
                   </div>}
