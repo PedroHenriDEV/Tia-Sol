@@ -784,17 +784,17 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/40 p-0 sm:p-5">
-          <div className="mx-auto flex h-[100dvh] min-h-0 max-h-[100dvh] w-full max-w-7xl flex-col overflow-hidden bg-white p-3 shadow-2xl sm:h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-3xl sm:p-6">
-            <div className="mb-5 flex shrink-0 items-start justify-between gap-4">
-              <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-600">Contrato {number}</p><h2 className="mt-1 text-xl font-semibold text-slate-900">{editing ? 'Editar contrato' : 'Novo contrato'}</h2><p className="text-sm text-slate-500">Preencha os dados e revise a prévia antes de salvar.</p></div>
+        <div className="fixed inset-0 z-[100] flex items-stretch justify-center overflow-hidden bg-slate-950/60 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="mx-auto flex h-[100dvh] min-h-0 max-h-[100dvh] w-full max-w-[1500px] flex-col overflow-hidden bg-slate-50 shadow-2xl sm:h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-[28px]">
+            <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-4 sm:px-7">
+              <div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-pink-100 text-pink-700"><FileSignature size={22} /></div><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-700">TIA SOL & CIA · CONTRATO {number}</p><h2 className="mt-1 truncate text-lg font-bold tracking-tight text-slate-950 sm:text-2xl">{editing ? 'Editar contrato' : 'Novo contrato'}</h2><p className="hidden text-xs text-slate-500 sm:block">Preencha os dados, confira a prévia e salve ao finalizar.</p></div></div>
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pb-5">
-              <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[minmax(0,1fr)_minmax(380px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
+              <div className="grid min-w-0 items-start gap-5">
                 <div className="min-w-0 space-y-5">
-                <section className="rounded-2xl border border-slate-200 p-4">
+                <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <label><span className="text-sm font-medium">Evento</span><select value={form.event_id || ''} onChange={(e) => selectEvent(e.target.value)} className={select}><option value="">Preenchimento manual</option>{events.filter((e) => e.status !== 'cancelado').map((e) => <option key={e.id} value={e.id}>{e.title} · {dateLabel(e.event_date)}</option>)}</select></label>
@@ -862,19 +862,17 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              <aside className="min-w-0 w-full xl:sticky xl:top-0">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:max-h-[calc(100dvh-13rem)] xl:overflow-y-auto">
-                  <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-slate-900">Prévia do documento</h3><p className="text-xs text-slate-500">Prévia ao vivo. Confira o documento enquanto preenche os campos.</p></div><button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  {preview && <div className="mt-4 w-full min-w-0">
+              </div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 xl:flex xl:flex-col xl:overflow-hidden xl:p-5">
+                <div className="mb-4 flex shrink-0 items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">Visualização ao vivo</p><h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3><p className="text-xs text-slate-500">Acompanhe o documento enquanto edita.</p></div>
+                  <button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm"><Eye size={17} /></button></div><div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+                  {preview && <div className="w-full min-w-0">
                     <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
                   </div>}
                 </div>
-              </aside>
-            </div>
-            </div>
+              </aside></div>
 
             {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
-            <div className="sticky bottom-0 z-30 mt-2 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white px-1 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_20px_rgba(15,23,42,0.08)] sm:flex-row sm:justify-end sm:gap-2">
+            <div className="relative z-30 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white px-3 pt-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.07)] sm:flex-row sm:items-center sm:justify-end sm:px-6 sm:py-4">
               <button type="button" onClick={() => setOpen(false)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto">Cancelar</button>
               <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto"><Copy size={16} /> Copiar texto</button>
               <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
