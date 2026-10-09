@@ -362,7 +362,7 @@ function isContractHeading(line: string) {
   const value = line.trim();
   return value === 'CONTRATO DE PRESTAÇÃO DE SERVIÇO DE RECREAÇÃO'
     || value === 'IDENTIFICAÇÃO DAS PARTES CONTRATANTES'
-    || /^CLÁUSULA \\d+ª - /.test(value)
+    || /^CLÁUSULA\s+\d+ª\s*[–-]\s*/.test(value)
     || /^\\d+\\. (CONTRATANTE|CONTRATADA)$/.test(value);
 }
 
@@ -628,8 +628,11 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       setFeedback(editing ? 'Contrato atualizado.' : 'Contrato salvo.');
       setTimeout(() => setOpen(false), 500);
     } catch (error) {
-      console.error(error);
-      setFeedback(error instanceof Error ? error.message : 'Não foi possível salvar o contrato.');
+      console.error('Erro ao salvar contrato:', error);
+      const detail = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message: unknown }).message)
+        : 'Erro inesperado ao salvar.';
+      setFeedback(`Não foi possível salvar o contrato: ${detail}`);
     } finally {
       setSaving(false);
     }
@@ -822,7 +825,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             <div className="mt-5 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
               <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700">Cancelar</button>
               <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700"><Copy size={16} /> Copiar texto</button>
-              <button type="button" disabled={saving} onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
+              <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
             </div>
           </div>
         </div>
