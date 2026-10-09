@@ -194,11 +194,26 @@ function createContractPdfBlob(text: string) {
     wrapped.forEach((item) => styledLines.push({ text: item, kind: 'body' }));
   });
 
+  // Pagina por altura tipográfica, não por quantidade fixa de linhas.
   const pages: typeof styledLines[] = [];
-  const linesPerPage = 45;
-  for (let i = 0; i < styledLines.length; i += linesPerPage) {
-    pages.push(styledLines.slice(i, i + linesPerPage));
-  }
+  const pageHeight = 730;
+  const lineHeight = (line: (typeof styledLines)[number]) =>
+    line.kind === 'title' ? 20 : line.kind === 'heading' ? 16 : 13;
+  let currentPage: typeof styledLines = [];
+  let usedHeight = 0;
+  styledLines.forEach((line, index) => {
+    const height = lineHeight(line);
+    const nextLine = styledLines[index + 1];
+    const headingNeedsKeep = line.kind === 'heading' && nextLine ? height + lineHeight(nextLine) : height;
+    if (currentPage.length && (usedHeight + height > pageHeight || (line.kind === 'heading' && usedHeight + headingNeedsKeep > pageHeight))) {
+      pages.push(currentPage);
+      currentPage = [];
+      usedHeight = 0;
+    }
+    currentPage.push(line);
+    usedHeight += height;
+  });
+  if (currentPage.length) pages.push(currentPage);
   if (!pages.length) pages.push([{ text: '', kind: 'body' }]);
 
   const objects: string[] = [
@@ -416,10 +431,16 @@ function buildContractText(form: ContractInput, number: string, company: Company
         .flatMap((item) => cleanContractText(item).split('\n'))
         .map((item) => item.trim())
         .filter(Boolean)
-        .map((item, index) => `${index + 1}. ${item}`)
+        .map((item, index) => \`\${index + 1}. \${item}\`)
         .join('\n')
     : '1. Conforme atividades do pacote contratado.';
+  const equipment = form.included_equipment.length
+    ? form.included_equipment.map((item, index) => \`\${index + 1}. \${item.trim()}\`).filter((item) => item.length > 0).join('\n')
+    : 'Não especificados.';
   const total = Number(form.total_amount) || 0;
+  const packageAmount = Math.max(0, total - Number(form.displacement_amount || 0));
+  const deposit = Number(form.deposit_amount) || 0;
+  const balance = Number(form.balance_amount) || Math.max(0, total - deposit);
   const date = dateLabel(form.event_date);
   const time = form.start_time && form.end_time
     ? `às ${form.start_time}, com encerramento às ${form.end_time} (${Math.max(0, (Number(form.end_time.split(':')[0]) * 60 + Number(form.end_time.split(':')[1] || 0)) - (Number(form.start_time.split(':')[0]) * 60 + Number(form.start_time.split(':')[1] || 0))) / 60}h de duração)`
@@ -453,6 +474,10 @@ SERVIÇO PRESTADO: ${packageName || 'RECREAÇÃO INFANTIL'}
 RECREAÇÃO INFANTIL ABRANGENDO:
 ${activities}
 
+MATERIAIS E EQUIPAMENTOS INCLUSOS:
+${equipment}
+QUANTIDADE DE RECREADORES: ${Math.max(1, Number(form.team_size) || 1)}.
+
 CLÁUSULA 2ª - DA FESTA
 
 • DATA E LOCAL: A FESTA OCORRERÁ NO DIA ${date} ${time}, NO ENDEREÇO: ${form.event_location || 'não informado'}.
@@ -471,7 +496,7 @@ CLÁUSULA 3ª - DAS OBRIGAÇÕES DO CONTRATANTE
 
 2. PAGAMENTO: O PAGAMENTO SERÁ EFETUADO CONFORME A CLÁUSULA 5ª.
 
-3. ALIMENTAÇÃO: A CONTRATANTE COMPROMETE-SE A FORNECER ALIMENTAÇÃO ADEQUADA PARA OS FUNCIONÁRIOS DA CONTRATADA QUE ESTIVEREM DESEMPENHANDO SUAS FUNÇÕES DURANTE A REALIZAÇÃO DO EVENTO.
+${form.catering_required ? '3. ALIMENTAÇÃO: A CONTRATANTE COMPROMETE-SE A FORNECER ALIMENTAÇÃO ADEQUADA À EQUIPE DA CONTRATADA DURANTE A REALIZAÇÃO DO EVENTO.' : '3. ALIMENTAÇÃO: Não foi acordado fornecimento de alimentação para a equipe da CONTRATADA.'}
 
 CLÁUSULA 4ª - DAS OBRIGAÇÕES DA CONTRATADA
 
@@ -487,10 +512,16 @@ CLÁUSULA 5ª – DA RETRIBUIÇÃO
 
 EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA TOTAL DE ${money(total)}, ESPECIFICADOS:
 
-1. PACOTE ${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: ${money(Math.max(0, total - Number(form.displacement_amount || 0)))}${form.additional_payment_terms ? `\n   ${form.additional_payment_terms}` : ''}
-2. TAXA DE DESLOCAMENTO: ${money(Number(form.displacement_amount || 0))}
+1. PACOTE \${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: \${money(packageAmount)}
+2. TAXA DE DESLOCAMENTO: \${money(Number(form.displacement_amount || 0))}
+3. SINAL / RESERVA: \${money(deposit)}\${form.deposit_date ? \` — data prevista: \${dateLabel(form.deposit_date)}\` : ''}
+4. SALDO RESTANTE: \${money(balance)}\${form.balance_due_date ? \` — vencimento: \${dateLabel(form.balance_due_date)}\` : ''}
+5. FORMA DE PAGAMENTO: \${form.payment_method || 'não informada'}
+6. CHAVE PIX: \${form.pix_key || 'não informada'}\${form.additional_payment_terms?.trim() ? \`\\n7. CONDIÇÕES ADICIONAIS: \${form.additional_payment_terms.trim()}\` : ''}
 
-O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.\n\nCLÁUSULA 6ª - DA RESCISÃO IMOTIVADA
+O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.
+
+CLÁUSULA 6ª - DA RESCISÃO IMOTIVADA
 
 1. DESISTÊNCIA: DESISTÊNCIA POR PARTE DO CONTRATANTE RESULTARÁ NA PERDA DO SINAL.
 
@@ -508,7 +539,7 @@ CLÁUSULA 8ª - DO FORO
 
 FICA DESDE JÁ ELEITO O FORO DA COMARCA DE ${company?.city || 'BELO HORIZONTE'} PARA SEREM RESOLVIDAS EVENTUAIS PENDÊNCIAS DECORRENTES DESTE CONTRATO.
 
-JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
+${form.contract_details?.trim() ? `CONDIÇÕES ESPECÍFICAS ACORDADAS:\n${form.contract_details.trim()}\n\n` : ''}${form.additional_observations?.trim() ? `OBSERVAÇÕES ADICIONAIS:\n${form.additional_observations.trim()}\n\n` : ''}JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
 
 ${name.toUpperCase()} — RESPONSÁVEL: ${responsible}
 
@@ -830,7 +861,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             </div>
 
             {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
-            <div className="sticky bottom-0 z-10 mt-3 flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-white pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2">
+            <div className="relative z-10 mt-3 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2">
               <button type="button" onClick={() => setOpen(false)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto">Cancelar</button>
               <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto"><Copy size={16} /> Copiar texto</button>
               <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
