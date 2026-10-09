@@ -431,11 +431,11 @@ function buildContractText(form: ContractInput, number: string, company: Company
         .flatMap((item) => cleanContractText(item).split('\n'))
         .map((item) => item.trim())
         .filter(Boolean)
-        .map((item, index) => \`\${index + 1}. \${item}\`)
+        .map((item, index) => `${index + 1}. ${item}`)
         .join('\n')
     : '1. Conforme atividades do pacote contratado.';
   const equipment = form.included_equipment.length
-    ? form.included_equipment.map((item, index) => \`\${index + 1}. \${item.trim()}\`).filter((item) => item.length > 0).join('\n')
+    ? form.included_equipment.map((item, index) => `${index + 1}. ${item.trim()}`).filter((item) => item.length > 0).join('\n')
     : 'Não especificados.';
   const total = Number(form.total_amount) || 0;
   const packageAmount = Math.max(0, total - Number(form.displacement_amount || 0));
@@ -512,12 +512,12 @@ CLÁUSULA 5ª – DA RETRIBUIÇÃO
 
 EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA TOTAL DE ${money(total)}, ESPECIFICADOS:
 
-1. PACOTE \${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: \${money(packageAmount)}
-2. TAXA DE DESLOCAMENTO: \${money(Number(form.displacement_amount || 0))}
-3. SINAL / RESERVA: \${money(deposit)}\${form.deposit_date ? \` — data prevista: \${dateLabel(form.deposit_date)}\` : ''}
-4. SALDO RESTANTE: \${money(balance)}\${form.balance_due_date ? \` — vencimento: \${dateLabel(form.balance_due_date)}\` : ''}
-5. FORMA DE PAGAMENTO: \${form.payment_method || 'não informada'}
-6. CHAVE PIX: \${form.pix_key || 'não informada'}\${form.additional_payment_terms?.trim() ? \`\\n7. CONDIÇÕES ADICIONAIS: \${form.additional_payment_terms.trim()}\` : ''}
+1. PACOTE ${(packageName || 'CONTRATADO').replace(/^PACOTE\s+/i, '').toUpperCase()}: ${money(packageAmount)}
+2. TAXA DE DESLOCAMENTO: ${money(Number(form.displacement_amount || 0))}
+3. SINAL / RESERVA: ${money(deposit)}${form.deposit_date ? ` — data prevista: ${dateLabel(form.deposit_date)}` : ''}
+4. SALDO RESTANTE: ${money(balance)}${form.balance_due_date ? ` — vencimento: ${dateLabel(form.balance_due_date)}` : ''}
+5. FORMA DE PAGAMENTO: ${form.payment_method || 'não informada'}
+6. CHAVE PIX: ${form.pix_key || 'não informada'}${form.additional_payment_terms?.trim() ? `\\n7. CONDIÇÕES ADICIONAIS: ${form.additional_payment_terms.trim()}` : ''}
 
 O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.
 
