@@ -785,7 +785,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/40 p-0 sm:p-5">
-          <div className="mx-auto flex h-dvh max-h-dvh w-full max-w-7xl flex-col overflow-hidden bg-white p-4 shadow-2xl sm:h-[calc(100dvh-2.5rem)] sm:rounded-3xl sm:p-6">
+          <div className="mx-auto flex h-[100dvh] min-h-0 max-h-[100dvh] w-full max-w-7xl flex-col overflow-hidden bg-white p-3 shadow-2xl sm:h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-3xl sm:p-6">
             <div className="mb-5 flex shrink-0 items-start justify-between gap-4">
               <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-pink-600">Contrato {number}</p><h2 className="mt-1 text-xl font-semibold text-slate-900">{editing ? 'Editar contrato' : 'Novo contrato'}</h2><p className="text-sm text-slate-500">Preencha os dados e revise a prévia antes de salvar.</p></div>
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
@@ -874,7 +874,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             </div>
 
             {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
-            <div className="relative z-10 mt-3 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white pt-3 pb-[max(0.25rem,env(safe-area-inset-bottom))] sm:flex-row sm:justify-end sm:gap-2">
+            <div className="sticky bottom-0 z-30 mt-2 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white px-1 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_20px_rgba(15,23,42,0.08)] sm:flex-row sm:justify-end sm:gap-2">
               <button type="button" onClick={() => setOpen(false)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto">Cancelar</button>
               <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto"><Copy size={16} /> Copiar texto</button>
               <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
