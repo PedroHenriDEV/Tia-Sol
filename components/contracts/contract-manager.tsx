@@ -428,11 +428,13 @@ function ContractPreview({ text }: { text: string }) {
   );
 }
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
-  const name = 'TIA SOL & CIA';
-  const responsible = 'LARISSA GARCIA RIBEIRO DE ALMEIDA';
-  const cnpj = '57.195.397/0001-31';
-  const companyAddress = 'AV. NOSSA SENHORA DA PIEDADE, 167 — AARÃO REIS';
-  const companyCityState = '';
+  const name = company?.trade_name || company?.legal_name || 'TIA SOL & CIA';
+  const responsible = company?.legal_name && company.legal_name !== name
+    ? company.legal_name
+    : 'LARISSA GARCIA RIBEIRO DE ALMEIDA';
+  const cnpj = company?.tax_id || '57.195.397/0001-31';
+  const companyAddress = company?.address || 'AV. NOSSA SENHORA DA PIEDADE, 167 — AARÃO REIS';
+  const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
   const activities = form.included_activities.length
     ? form.included_activities
         .flatMap((item) => cleanContractText(item).split('\n'))
@@ -530,7 +532,7 @@ EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA T
 5. FORMA DE PAGAMENTO: ${form.payment_method || 'não informada'}
 6. CHAVE PIX: ${form.pix_key || 'não informada'}${form.additional_payment_terms?.trim() ? `\n7. CONDIÇÕES ADICIONAIS: ${form.additional_payment_terms.trim()}` : ''}
 
-O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.
+O valor total do serviço contratado deverá estar integralmente quitado até a data de realização do evento, podendo o pagamento ser efetuado em duas etapas: entrada e saldo restante, respeitando-se o prazo estabelecido nesta cláusula.
 
 CLÁUSULA 6ª - DA RESCISÃO IMOTIVADA
 
@@ -791,7 +793,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[minmax(0,1fr)_minmax(380px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
               <div className="grid min-w-0 items-start gap-5">
                 <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -862,7 +864,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              </div></div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 xl:flex xl:flex-col xl:overflow-hidden xl:p-5">
+              </div></div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 lg:flex lg:flex-col lg:overflow-hidden lg:p-5">
                 <div className="mb-4 flex shrink-0 items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">Visualização ao vivo</p><h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3><p className="text-xs text-slate-500">Acompanhe o documento enquanto edita.</p></div>
                   <button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm"><Eye size={17} /></button></div><div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
                   {preview && <div className="w-full min-w-0">
