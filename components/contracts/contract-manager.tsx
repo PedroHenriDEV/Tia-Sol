@@ -862,7 +862,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              </div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 xl:flex xl:flex-col xl:overflow-hidden xl:p-5">
+              </div></div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 xl:flex xl:flex-col xl:overflow-hidden xl:p-5">
                 <div className="mb-4 flex shrink-0 items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">Visualização ao vivo</p><h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3><p className="text-xs text-slate-500">Acompanhe o documento enquanto edita.</p></div>
                   <button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm"><Eye size={17} /></button></div><div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
                   {preview && <div className="w-full min-w-0">
