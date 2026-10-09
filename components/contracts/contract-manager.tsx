@@ -619,7 +619,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     setNumber('001/' + new Date().getFullYear());
     setForm({ ...emptyForm });
     setFeedback('');
-    setPreview(false);
+    setPreview(true);
     setOpen(true);
   }
 
@@ -644,7 +644,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       additional_observations: contract.additional_observations || '', contract_details: contract.contract_details || '',
     });
     setFeedback('');
-    setPreview(false);
+    setPreview(true);
     setOpen(true);
   }
 
