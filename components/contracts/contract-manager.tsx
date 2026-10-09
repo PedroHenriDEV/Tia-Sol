@@ -517,7 +517,7 @@ EM RETRIBUIÇÃO PELOS SERVIÇOS PRESTADOS, A CONTRATADA RECEBERÁ UMA QUANTIA T
 3. SINAL / RESERVA: ${money(deposit)}${form.deposit_date ? ` — data prevista: ${dateLabel(form.deposit_date)}` : ''}
 4. SALDO RESTANTE: ${money(balance)}${form.balance_due_date ? ` — vencimento: ${dateLabel(form.balance_due_date)}` : ''}
 5. FORMA DE PAGAMENTO: ${form.payment_method || 'não informada'}
-6. CHAVE PIX: ${form.pix_key || 'não informada'}${form.additional_payment_terms?.trim() ? `\\n7. CONDIÇÕES ADICIONAIS: ${form.additional_payment_terms.trim()}` : ''}
+6. CHAVE PIX: ${form.pix_key || 'não informada'}${form.additional_payment_terms?.trim() ? `\n7. CONDIÇÕES ADICIONAIS: ${form.additional_payment_terms.trim()}` : ''}
 
 O VALOR TOTAL DO SERVIÇO CONTRATADO DEVERÁ ESTAR INTEGRALMENTE QUITADO ATÉ A DATA DE REALIZAÇÃO DO EVENTO, PODENDO O PAGAMENTO SER EFETUADO EM DUAS ETAPAS: ENTRADA E SALDO RESTANTE, RESPEITANDO-SE O PRAZO ESTABELECIDO NESTA CLÁUSULA.
 
