@@ -368,7 +368,7 @@ function isContractHeading(line: string) {
 
 function ContractPreview({ text }: { text: string }) {
   return (
-    <div className="overflow-auto rounded-xl border border-slate-200 bg-white p-6 text-[14px] leading-7 text-slate-700 shadow-sm">
+    <div className="w-full min-w-0 overflow-x-hidden rounded-xl border border-slate-200 bg-white p-4 text-[14px] leading-7 text-slate-700 shadow-sm [overflow-wrap:anywhere] sm:p-6">
       {cleanContractText(text).split('\n').map((line, index) => {
         const value = line.trim();
         if (!value) return <div key={index} className="h-3" />;
@@ -629,10 +629,18 @@ export function ContractManager({ initialContracts, events, clients, packages, c
       setTimeout(() => setOpen(false), 500);
     } catch (error) {
       console.error('Erro ao salvar contrato:', error);
-      const detail = error && typeof error === 'object' && 'message' in error
-        ? String((error as { message: unknown }).message)
-        : 'Erro inesperado ao salvar.';
-      setFeedback(`Não foi possível salvar o contrato: ${detail}`);
+      const details = error && typeof error === 'object'
+        ? error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown }
+        : null;
+      const detail = [
+        details?.message,
+        details?.details,
+        details?.hint,
+        details?.code ? `Código: ${String(details.code)}` : null,
+      ].filter((part) => part !== undefined && part !== null && String(part).trim()).map(String).join(' — ');
+      setFeedback(detail
+        ? `Não foi possível salvar o contrato: ${detail}`
+        : 'Não foi possível salvar o contrato. Confira os campos obrigatórios e tente novamente.');
     } finally {
       setSaving(false);
     }
@@ -741,8 +749,8 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,.85fr)]">
-              <div className="space-y-5">
+            <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -811,7 +819,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
               </div>
 
-              <aside className="lg:sticky lg:top-0 lg:self-start">
+              <aside className="min-w-0 lg:sticky lg:top-0 lg:self-start">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
                   <div className={preview ? 'mt-4 max-h-[65vh]' : 'mt-4 max-h-72'}>
