@@ -749,7 +749,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(420px,.9fr)]">
+            <div className="grid min-w-0 grid-cols-1 items-start gap-6">
               <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
@@ -821,10 +821,10 @@ export function ContractManager({ initialContracts, events, clients, packages, c
 
               <aside className="min-w-0 w-full">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">Prévia do contrato</h3><p className="text-xs text-slate-500">O documento será gerado com estes dados.</p></div><button type="button" onClick={() => setPreview(!preview)} className="rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
-                  <div className={preview ? 'mt-4 max-h-[75vh] overflow-y-auto' : 'mt-4 max-h-72 overflow-y-auto'}>
+                  <div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-slate-900">Prévia completa do contrato</h3><p className="text-xs text-slate-500">Documento completo, exibido abaixo dos campos e sem corte de altura.</p></div><button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-lg bg-white p-2 text-slate-600 shadow-sm"><Eye size={17} /></button></div>
+                  {preview && <div className="mt-4 w-full min-w-0">
                     <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
-                  </div>
+                  </div>}
                 </div>
               </aside>
             </div>
