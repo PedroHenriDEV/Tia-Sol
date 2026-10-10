@@ -570,6 +570,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
   const [number, setNumber] = useState('001/' + new Date().getFullYear());
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState(true);
+  const [mobilePreview, setMobilePreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -795,7 +796,12 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
+            <div className="grid grid-cols-2 gap-2 border-b border-slate-200 bg-white p-2 lg:hidden">
+              <button type="button" onClick={() => setMobilePreview(false)} aria-pressed={!mobilePreview} className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ${!mobilePreview ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600'}`}>Dados do contrato</button>
+              <button type="button" onClick={() => setMobilePreview(true)} aria-pressed={mobilePreview} className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ${mobilePreview ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Eye size={15} className="mr-1 inline" /> Pré-contrato</button>
+            </div>
+
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className={`min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6 ${mobilePreview ? 'hidden lg:block' : 'block'}`}><div className="mx-auto max-w-3xl space-y-5">
               <div className="grid min-w-0 items-start gap-5">
                 <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -866,7 +872,16 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              </div></div></div><aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 lg:flex lg:flex-col lg:overflow-hidden lg:p-5">
+              </div></div></div>
+              <div className={`min-h-0 overflow-y-auto bg-slate-100/80 p-3 sm:p-5 lg:hidden ${mobilePreview ? 'flex flex-col' : 'hidden'}`}>
+                <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">TIA SOL & CIA</p>
+                  <h3 className="mt-1 font-bold text-slate-950">Pré-contrato</h3>
+                  <p className="mt-1 text-xs text-slate-500">A prévia é atualizada automaticamente conforme você altera os dados.</p>
+                </div>
+                <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
+              </div>
+              <aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 lg:flex lg:flex-col lg:overflow-hidden lg:p-5">
                 <div className="mb-4 flex shrink-0 items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">Visualização ao vivo</p><h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3><p className="text-xs text-slate-500">Acompanhe o documento enquanto edita.</p></div>
                   <button type="button" onClick={() => setPreview(!preview)} aria-label={preview ? 'Ocultar prévia do contrato' : 'Mostrar prévia do contrato'} className="shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 shadow-sm"><Eye size={17} /></button></div><div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
                   {preview && <div className="w-full min-w-0">
