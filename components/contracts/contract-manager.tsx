@@ -796,8 +796,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
             </div>
 
             <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
-              <div className="grid min-w-0 items-start gap-5">
-                <div className="min-w-0 space-y-5">
+              <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="font-semibold text-slate-900">1. Vincular ao evento e pacote</h3>
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -866,7 +865,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              </div></div>
+              </div>
               <section className="mt-6 border-t border-slate-200 pt-6 lg:hidden">
                 <div className="mb-3 rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">TIA SOL & CIA</p>
