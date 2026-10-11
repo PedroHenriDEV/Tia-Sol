@@ -570,7 +570,6 @@ export function ContractManager({ initialContracts, events, clients, packages, c
   const [number, setNumber] = useState('001/' + new Date().getFullYear());
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState(true);
-  const [mobilePreview, setMobilePreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -796,12 +795,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
               <button onClick={() => setOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X size={19} /></button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 border-b border-slate-200 bg-white p-2 lg:hidden">
-              <button type="button" onClick={() => setMobilePreview(false)} aria-pressed={!mobilePreview} className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ${!mobilePreview ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600'}`}>Dados do contrato</button>
-              <button type="button" onClick={() => setMobilePreview(true)} aria-pressed={mobilePreview} className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ${mobilePreview ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600'}`}><Eye size={15} className="mr-1 inline" /> Pré-contrato</button>
-            </div>
-
-            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className={`min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6 ${mobilePreview ? 'hidden lg:block' : 'block'}`}><div className="mx-auto max-w-3xl space-y-5">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.88fr)]"><div className="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6"><div className="mx-auto max-w-3xl space-y-5">
               <div className="grid min-w-0 items-start gap-5">
                 <div className="min-w-0 space-y-5">
                 <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -872,14 +866,15 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
                 </div>
 
-              </div></div></div>
-              <div className={`min-h-0 min-w-0 overflow-y-auto overscroll-contain bg-slate-100/80 p-3 sm:p-5 lg:hidden ${mobilePreview ? 'flex h-full flex-col' : 'hidden'}`}>
-                <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3">
+              </div></div>
+              <section className="mt-6 border-t border-slate-200 pt-6 lg:hidden">
+                <div className="mb-3 rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">TIA SOL & CIA</p>
-                  <h3 className="mt-1 font-bold text-slate-950">Pré-contrato</h3>
-                  <p className="mt-1 text-xs text-slate-500">A prévia é atualizada automaticamente conforme você altera os dados.</p>
+                  <h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3>
+                  <p className="mt-1 text-xs text-slate-500">Confira o documento completo. A prévia acompanha automaticamente as alterações dos campos acima.</p>
                 </div>
                 <ContractPreview text={buildContractText(form, number, company, selectedPackage?.name)} />
+              </section>
               </div>
               <aside className="hidden min-h-0 min-w-0 border-l border-slate-200 bg-slate-100/80 p-4 lg:flex lg:flex-col lg:overflow-hidden lg:p-5">
                 <div className="mb-4 flex shrink-0 items-center justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-pink-700">Visualização ao vivo</p><h3 className="mt-1 text-lg font-bold text-slate-950">Prévia do contrato</h3><p className="text-xs text-slate-500">Acompanhe o documento enquanto edita.</p></div>
@@ -892,7 +887,6 @@ export function ContractManager({ initialContracts, events, clients, packages, c
 
             {feedback && <div className="mt-3 shrink-0 rounded-xl bg-pink-50 px-4 py-3 text-sm font-medium text-pink-800">{feedback}</div>}
             <div className="relative z-30 flex shrink-0 flex-col gap-2 border-t border-slate-200 bg-white px-3 pt-3 pb-[max(0.65rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.07)] sm:flex-row sm:items-center sm:justify-end sm:px-6 sm:py-4">
-              <button type="button" onClick={() => setMobilePreview((current) => !current)} className="w-full rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-sm font-semibold text-pink-700 sm:hidden"><Eye size={16} className="mr-2 inline" />{mobilePreview ? "Voltar aos dados" : "Pré-visualizar contrato"}</button>
               <button type="button" onClick={() => setOpen(false)} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto">Cancelar</button>
               <button type="button" onClick={() => navigator.clipboard?.writeText(buildContractText(form, number, company, selectedPackage?.name))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 sm:w-auto"><Copy size={16} /> Copiar texto</button>
               <button type="button" disabled={saving} onClick={() => { void save(); }} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto">{saving ? 'Salvando...' : <><CheckCircle2 size={17} /> Salvar contrato</>}</button>
