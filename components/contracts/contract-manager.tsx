@@ -428,7 +428,7 @@ function ContractPreview({ text }: { text: string }) {
   );
 }
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
-  const name = company?.trade_name || company?.legal_name || 'TIA SOL & CIA';
+  const name = 'TIA SOL RECREAÇÃO';
   const cnpj = company?.tax_id || '57.195.397/0001-31';
   const companyAddress = company?.address || 'AV. NOSSA SENHORA DA PIEDADE, 167 — AARÃO REIS';
   const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
