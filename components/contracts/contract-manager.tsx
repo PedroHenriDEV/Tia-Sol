@@ -429,9 +429,6 @@ function ContractPreview({ text }: { text: string }) {
 }
 function buildContractText(form: ContractInput, number: string, company: Company | null, packageName?: string | null) {
   const name = company?.trade_name || company?.legal_name || 'TIA SOL & CIA';
-  const responsible = company?.legal_name && company.legal_name !== name
-    ? company.legal_name
-    : 'LARISSA GARCIA RIBEIRO DE ALMEIDA';
   const cnpj = company?.tax_id || '57.195.397/0001-31';
   const companyAddress = company?.address || 'AV. NOSSA SENHORA DA PIEDADE, 167 — AARÃO REIS';
   const companyCityState = [company?.city, company?.state].filter(Boolean).join(' - ');
@@ -466,7 +463,7 @@ IDENTIFICAÇÃO DAS PARTES CONTRATANTES
 • E-MAIL: ${form.contractor_email || 'não informado'}
 
 2. CONTRATADA
-• NOME: ${name} (${responsible})
+• NOME: ${name}
 • ENDEREÇO: ${companyAddress}${companyCityState ? ` - ${companyCityState}` : ''}
 • CNPJ: ${cnpj}
 
@@ -549,9 +546,7 @@ FICA DESDE JÁ ELEITO O FORO DA COMARCA DE ${company?.city || 'BELO HORIZONTE'} 
 
 ${form.contract_details?.trim() ? `CONDIÇÕES ESPECÍFICAS ACORDADAS:\n${form.contract_details.trim()}\n\n` : ''}${form.additional_observations?.trim() ? `OBSERVAÇÕES ADICIONAIS:\n${form.additional_observations.trim()}\n\n` : ''}JUSTO E ACORDADO O PRESENTE DOCUMENTO, CONTRATANTE E CONTRATADA CONCORDAM VIA CONTRATO ONLINE.
 
-LARISSA GARCIA — RESPONSÁVEL: LARISSA GARCIA RIBEIRO DE ALMEIDA
-
-TIA SOL RECREAÇÃO — RESPONSÁVEL: LARISSA GARCIA RIBEIRO DE ALMEIDA
+${name}
 
 ${form.contractor_name || 'CONTRATANTE'}
 
