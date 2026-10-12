@@ -443,9 +443,6 @@ function buildContractText(form: ContractInput, number: string, company: Company
         .map((item, index) => `${index + 1}. ${item}`)
         .join('\n')
     : '1. Conforme atividades do pacote contratado.';
-  const equipment = form.included_equipment.length
-    ? form.included_equipment.map((item, index) => `${index + 1}. ${item.trim()}`).filter((item) => item.length > 0).join('\n')
-    : 'Não especificados.';
   const total = Number(form.total_amount) || 0;
   const packageAmount = Math.max(0, total - Number(form.displacement_amount || 0));
   const deposit = Number(form.deposit_amount) || 0;
@@ -483,8 +480,6 @@ SERVIÇO PRESTADO: ${packageName || 'RECREAÇÃO INFANTIL'}
 RECREAÇÃO INFANTIL ABRANGENDO:
 ${activities}
 
-MATERIAIS E EQUIPAMENTOS INCLUSOS:
-${equipment}
 QUANTIDADE DE RECREADORES: ${Math.max(1, Number(form.team_size) || 1)}.
 
 CLÁUSULA 2ª - DA FESTA
@@ -830,10 +825,9 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 </section>
 
                 <section className="rounded-2xl border border-slate-200 p-4">
-                  <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">4. Equipe, atividades e materiais</h3><p className="text-xs text-slate-500">O pacote preenche as atividades automaticamente, mas você pode ajustar.</p></div><input type="number" min="1" value={form.team_size} onChange={(e) => patch({ team_size: Number(e.target.value) })} className="input w-24" aria-label="Quantidade de recreadores" /></div>
+                  <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">4. Equipe e atividades</h3><p className="text-xs text-slate-500">O pacote preenche as atividades automaticamente, mas você pode ajustar.</p></div><input type="number" min="1" value={form.team_size} onChange={(e) => patch({ team_size: Number(e.target.value) })} className="input w-24" aria-label="Quantidade de recreadores" /></div>
                   <div className="mt-4 grid gap-5 md:grid-cols-2">
                     <div><div className="flex items-center justify-between"><span className="text-sm font-medium">Atividades inclusas</span><button type="button" onClick={() => addLine('included_activities')} className="text-xs font-semibold text-pink-600">+ adicionar</button></div><div className="mt-2 space-y-2">{form.included_activities.map((item, index) => <div key={index} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span className="flex-1">• {item}</span><button type="button" onClick={() => removeLine('included_activities', index)} className="text-slate-400 hover:text-red-500"><X size={14} /></button></div>)}</div></div>
-                    <div><div className="flex items-center justify-between"><span className="text-sm font-medium">Equipamentos/materiais</span><button type="button" onClick={() => addLine('included_equipment')} className="text-xs font-semibold text-pink-600">+ adicionar</button></div><div className="mt-2 space-y-2">{form.included_equipment.map((item, index) => <div key={index} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span className="flex-1">• {item}</span><button type="button" onClick={() => removeLine('included_equipment', index)} className="text-slate-400 hover:text-red-500"><X size={14} /></button></div>)}</div></div>
                   </div>
                 </section>
 
