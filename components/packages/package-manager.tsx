@@ -16,7 +16,7 @@ const emptyForm: PackageDraft = {
   name: '',
   description: '',
   price: '',
-  duration: '',
+  duration: '1',
   activities: [],
   notes: '',
   active: true,
