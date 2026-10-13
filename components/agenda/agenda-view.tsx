@@ -247,13 +247,13 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
         </div>
       </section>
 
-      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)] overflow-hidden">
+      <section className="rounded-[20px] border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-soft)] overflow-x-auto">
         <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-4 sm:px-6">
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronLeft size={18} /></button>
           <div className="text-center"><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Calendário</p><h2 className="display-title text-xl capitalize sm:text-2xl">{monthTitle(month)}</h2></div>
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronRight size={18} /></button>
         </div>
-        <div className="grid w-full min-w-0 grid-cols-7 border-b border-[var(--border)]">
+        <div className="grid min-w-[420px] grid-cols-7 border-b border-[var(--border)]">
           {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((day) => <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{day}</div>)}
         </div>
         <div className="grid min-w-[420px] grid-cols-7">
