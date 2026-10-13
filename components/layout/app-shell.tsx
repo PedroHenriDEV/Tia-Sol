@@ -23,7 +23,7 @@ export function AppShell({
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div className="lg:pl-[var(--sidebar-width)]">
         <Header email={email} fullName={fullName} avatarUrl={avatarUrl} onMenu={() => setOpen(true)} />
-        <main className="mx-auto w-full max-w-[1580px] px-5 pb-24 pt-7 sm:px-8 sm:pt-9 lg:px-10 lg:pb-10 lg:pt-10">{children}</main>
+        <main className="mx-auto w-full max-w-[1580px] px-3 pb-24 pt-5 sm:px-6 sm:pt-8 lg:px-10 lg:pb-10 lg:pt-10">{children}</main>
       </div>
       <BottomNav />
     </div>
