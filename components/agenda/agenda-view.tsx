@@ -114,11 +114,6 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
       ...(pkg ? {
         title: current.title || pkg.name,
         total_amount: Number(pkg.price),
-        end_time: current.start_time ? (() => {
-          const [h, m] = current.start_time.split(':').map(Number);
-          const total = h * 60 + m + Number(pkg.duration) * 60;
-          return `${String(Math.floor((total % 1440) / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-        })() : current.end_time,
       } : {}),
     }));
   }
@@ -247,7 +242,7 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
           <div className="text-center"><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Calendário</p><h2 className="display-title text-xl capitalize sm:text-2xl">{monthTitle(month)}</h2></div>
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronRight size={18} /></button>
         </div>
-        <div className="grid min-w-[420px] grid-cols-7 border-b border-[var(--border)]">
+        <div className="grid w-full min-w-0 grid-cols-7 border-b border-[var(--border)]">
           {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((day) => <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{day}</div>)}
         </div>
         <div className="grid min-w-[420px] grid-cols-7">
@@ -257,13 +252,13 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
             const inMonth = day.getMonth() === month.getMonth();
             const today = key === dateKey(new Date());
             return (
-              <button key={key} type="button" onClick={() => openCreate(key)} className={'min-h-24 border-b border-r border-[var(--border)] p-2 text-left transition hover:bg-[var(--primary-soft)] sm:min-h-28 ' + (!inMonth ? 'opacity-40 ' : '')}>
-                <span className={'grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ' + (today ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)]')}>{day.getDate()}</span>
-                <div className="mt-1 space-y-1">
+              <button key={key} type="button" onClick={() => openCreate(key)} className={'min-h-16 min-w-0 overflow-hidden border-b border-r border-[var(--border)] p-1 text-left transition hover:bg-[var(--primary-soft)] sm:min-h-28 sm:p-2 ' + (!inMonth ? 'opacity-40 ' : '')}>
+                <span className={'grid h-6 w-6 place-items-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ' + (today ? 'bg-[var(--primary)] text-white' : 'text-[var(--foreground)]')}>{day.getDate()}</span>
+                <div className="mt-1 space-y-1 overflow-hidden">
                   {items.slice(0, 2).map((event) => {
                     const urgency = getEventUrgency(event.event_date);
                     return (
-                      <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-1.5 py-1 text-[10px] font-semibold ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : urgency.className)}>
+                      <span key={event.id} onClick={(e) => { e.stopPropagation(); openEdit(event); }} className={'block truncate rounded-md px-0.5 py-1 text-[9px] font-semibold sm:px-1.5 sm:text-[10px] ' + (event.status === 'cancelado' ? 'bg-[var(--danger-soft)] text-[var(--danger)]' : urgency.className)}>
                         {event.start_time.slice(0,5)} · {event.title}
                       </span>
                     );
