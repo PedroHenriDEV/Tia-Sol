@@ -796,7 +796,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                     <label><span className="text-sm font-medium">Evento</span><select value={form.event_id || ''} onChange={(e) => selectEvent(e.target.value)} className={select}><option value="">Preenchimento manual</option>{events.filter((e) => e.status !== 'cancelado').map((e) => <option key={e.id} value={e.id}>{e.title} · {dateLabel(e.event_date)}</option>)}</select></label>
                     <label><span className="text-sm font-medium">Pacote</span><select value={form.package_id || ''} onChange={(e) => selectPackage(e.target.value)} className={select}><option value="">Selecione um pacote</option>{packages.filter((p) => p.active).map((p) => <option key={p.id} value={p.id}>{p.name}{p.price > 0 ? ` · ${money(p.price)}` : ''}</option>)}</select></label>
                   </div>
-                  {selectedPackage && <div className="mt-3 rounded-xl bg-pink-50 p-3 text-sm text-pink-900"><strong>{selectedPackage.name}</strong> · {selectedPackage.duration}h{selectedPackage.price > 0 ? ` · ${money(selectedPackage.price)}` : ' · Valor a definir'}<p className="mt-1 text-xs">Ao selecionar este pacote, as atividades abaixo são preenchidas automaticamente.</p></div>}
+                  {selectedPackage && <div className="mt-3 rounded-xl bg-pink-50 p-3 text-sm text-pink-900"><strong>{selectedPackage.name}</strong>{selectedPackage.price > 0 ? ` · ${money(selectedPackage.price)}` : ' · Valor a definir'}<p className="mt-1 text-xs">Ao selecionar este pacote, as atividades abaixo são preenchidas automaticamente.</p></div>}
                 </section>
 
                 <section className="rounded-2xl border border-slate-200 p-4">
