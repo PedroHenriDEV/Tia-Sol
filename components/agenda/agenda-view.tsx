@@ -203,10 +203,13 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
               {operational.today.length === 0 ? (
                 <div className="px-4 py-8 text-center text-sm text-[var(--muted-foreground)]"><CheckCircle2 className="mx-auto mb-2 text-emerald-500" size={20} />Nenhum evento programado para hoje.</div>
               ) : operational.today.map((event) => (
-                <div key={event.id} className="flex items-center gap-3 p-4">
-                  <div className="w-16 shrink-0 text-center"><p className="text-sm font-bold">{event.start_time.slice(0,5)}</p><p className="text-[10px] text-[var(--muted)]">{event.end_time.slice(0,5)}</p></div>
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{event.title}</p><p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}{event.location ? ` · ${event.location}` : ''}</p></div>
-                  <a href={`/eventos/${event.id}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central"><Eye size={16} /></a>
+                <div key={event.id} className="flex flex-wrap items-center gap-2 p-3 sm:flex-nowrap sm:gap-3 sm:p-4">
+                  <div className="w-14 shrink-0 text-center sm:w-16"><p className="text-sm font-bold">{event.start_time.slice(0,5)}</p><p className="text-[10px] text-[var(--muted)]">{event.end_time.slice(0,5)}</p></div>
+                  <div className="min-w-0 flex-1 basis-[calc(100%-4.5rem)] sm:basis-auto"><p className="break-words text-sm font-semibold">{event.title}</p><p className="mt-1 break-words text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}{event.location ? ` · ${event.location}` : ''}</p></div>
+                  <div className="ml-auto flex shrink-0 items-center gap-1">
+                    <button type="button" onClick={() => openEdit(event)} className="grid h-9 w-9 place-items-center rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--background)]" title="Alterar evento" aria-label="Alterar evento"><Pencil size={16} /></button>
+                    <a href={`/eventos/${event.id}`} className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central" aria-label="Abrir central"><Eye size={16} /></a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -223,11 +226,14 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
               ) : operational.upcoming.map((event) => {
                 const urgency = getEventUrgency(event.event_date);
                 return (
-                  <div key={event.id} className="flex items-center gap-3 p-4">
-                    <div className="w-20 shrink-0 rounded-xl bg-[var(--background)] p-2 text-center"><p className="text-xs font-bold">{formatDate(event.event_date)}</p><p className="mt-1 text-[10px] text-[var(--muted)]">{event.start_time.slice(0,5)}</p></div>
-                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{event.title}</p><p className="mt-1 truncate text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}</p></div>
+                  <div key={event.id} className="flex flex-wrap items-center gap-2 p-3 sm:flex-nowrap sm:gap-3 sm:p-4">
+                    <div className="w-[4.5rem] shrink-0 rounded-xl bg-[var(--background)] p-2 text-center sm:w-20"><p className="text-xs font-bold">{formatDate(event.event_date)}</p><p className="mt-1 text-[10px] text-[var(--muted)]">{event.start_time.slice(0,5)}</p></div>
+                    <div className="min-w-0 flex-1 basis-[calc(100%-5rem)] sm:basis-auto"><p className="break-words text-sm font-semibold">{event.title}</p><p className="mt-1 break-words text-xs text-[var(--muted-foreground)]">{event.client?.name ?? 'Cliente não informado'}</p></div>
                     <span className={"hidden rounded-full px-2 py-1 text-[10px] font-bold sm:inline-flex " + urgency.className}>{urgency.label}</span>
-                    <a href={`/eventos/${event.id}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central"><Eye size={16} /></a>
+                    <div className="ml-auto flex shrink-0 items-center gap-1">
+                      <button type="button" onClick={() => openEdit(event)} className="grid h-9 w-9 place-items-center rounded-xl text-[var(--muted-foreground)] hover:bg-[var(--background)]" title="Alterar evento" aria-label="Alterar evento"><Pencil size={16} /></button>
+                      <a href={`/eventos/${event.id}`} className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-80" title="Abrir central" aria-label="Abrir central"><Eye size={16} /></a>
+                    </div>
                   </div>
                 );
               })}
