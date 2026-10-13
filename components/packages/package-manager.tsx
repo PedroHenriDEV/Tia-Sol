@@ -184,7 +184,6 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
                       <p className="text-lg font-semibold text-[var(--foreground)]">
                         {packageItem.price > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(packageItem.price) : 'Valor a definir'}
                       </p>
-                      <p className="text-sm text-[var(--muted)]">{packageItem.duration} horas</p>
                     </div>
                   </div>
 
@@ -269,18 +268,6 @@ export function PackageManager({ initialPackages, error }: { initialPackages: Pa
                     />
                   </label>
 
-                  <label className="block text-sm font-medium text-[var(--foreground)]">
-                    Duração (horas)
-                    <input
-                      required
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={draft.duration}
-                      onChange={(event) => setDraft((current) => ({ ...current, duration: event.target.value }))}
-                      className="input mt-2"
-                    />
-                  </label>
                 </div>
 
                 <div>
