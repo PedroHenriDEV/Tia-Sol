@@ -446,7 +446,7 @@ function buildContractText(form: ContractInput, number: string, company: Company
   const balance = Number(form.balance_amount) || Math.max(0, total - deposit);
   const date = dateLabel(form.event_date);
   const time = form.start_time && form.end_time
-    ? `às ${form.start_time}, com encerramento às ${form.end_time} (${Math.max(0, (Number(form.end_time.split(':')[0]) * 60 + Number(form.end_time.split(':')[1] || 0)) - (Number(form.start_time.split(':')[0]) * 60 + Number(form.start_time.split(':')[1] || 0))) / 60}h de duração)`
+    ? `às ${form.start_time}, com encerramento às ${form.end_time}`
     : `às ${form.start_time || 'horário não informado'}`;
   const today = new Intl.DateTimeFormat('pt-BR').format(new Date());
 
