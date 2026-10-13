@@ -562,6 +562,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
   const [preview, setPreview] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [newActivity, setNewActivity] = useState('');
 
   const selectedPackage = useMemo(() => packages.find((item) => item.id === form.package_id), [packages, form.package_id]);
 
@@ -717,9 +718,11 @@ export function ContractManager({ initialContracts, events, clients, packages, c
     }
   }
 
-  function addLine(field: 'included_activities' | 'included_equipment') {
-    const value = window.prompt(field === 'included_activities' ? 'Nova atividade incluída:' : 'Novo equipamento/material incluído:');
-    if (value?.trim()) patch({ [field]: [...form[field], value.trim()] });
+  function addActivity() {
+    const value = newActivity.trim();
+    if (!value) return;
+    patch({ included_activities: [...form.included_activities, value] });
+    setNewActivity('');
   }
 
   function removeLine(field: 'included_activities' | 'included_equipment', index: number) {
@@ -822,7 +825,7 @@ export function ContractManager({ initialContracts, events, clients, packages, c
                 <section className="rounded-2xl border border-slate-200 p-4">
                   <div className="flex items-center justify-between"><div><h3 className="font-semibold text-slate-900">4. Equipe e atividades</h3><p className="text-xs text-slate-500">O pacote preenche as atividades automaticamente, mas você pode ajustar.</p></div><input type="number" min="1" value={form.team_size} onChange={(e) => patch({ team_size: Number(e.target.value) })} className="input w-24" aria-label="Quantidade de recreadores" /></div>
                   <div className="mt-4 grid gap-5 md:grid-cols-2">
-                    <div><div className="flex items-center justify-between"><span className="text-sm font-medium">Atividades inclusas</span><button type="button" onClick={() => addLine('included_activities')} className="text-xs font-semibold text-pink-600">+ adicionar</button></div><div className="mt-2 space-y-2">{form.included_activities.map((item, index) => <div key={index} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span className="flex-1">• {item}</span><button type="button" onClick={() => removeLine('included_activities', index)} className="text-slate-400 hover:text-red-500"><X size={14} /></button></div>)}</div></div>
+                    <div><span className="text-sm font-medium">Atividades inclusas</span><form onSubmit={(e) => { e.preventDefault(); addActivity(); }} className="mt-2 flex gap-2"><input value={newActivity} onChange={(e) => setNewActivity(e.target.value)} className="input min-w-0 flex-1" placeholder="Digite uma atividade" aria-label="Nova atividade inclusa" /><button type="submit" className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-pink-600 px-3 py-2 text-xs font-semibold text-white"><Plus size={14} /> Adicionar</button></form><div className="mt-2 space-y-2">{form.included_activities.map((item, index) => <div key={index} className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"><span className="min-w-0 flex-1 break-words">• {item}</span><button type="button" onClick={() => removeLine('included_activities', index)} aria-label={`Remover atividade ${item}`} className="shrink-0 text-slate-400 hover:text-red-500"><X size={14} /></button></div>)}</div></div>
                   </div>
                 </section>
 
