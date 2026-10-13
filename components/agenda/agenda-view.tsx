@@ -253,10 +253,8 @@ export function AgendaView({ initialEvents, clients, packages }: Props) {
           <div className="text-center"><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Calendário</p><h2 className="display-title text-xl capitalize sm:text-2xl">{monthTitle(month)}</h2></div>
           <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--background)]"><ChevronRight size={18} /></button>
         </div>
-        <div className="grid min-w-[420px] grid-cols-7 border-b border-[var(--border)]">
-          {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((day) => <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{day}</div>)}
-        </div>
         <div className="grid min-w-[420px] grid-cols-7">
+          {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((day) => <div key={day} className="border-b border-[var(--border)] py-2 text-center text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">{day}</div>)}
           {days.map((day) => {
             const key = dateKey(day);
             const items = byDate.get(key) ?? [];
