@@ -51,7 +51,6 @@ export async function createEvent(supabase: SupabaseClient, input: EventInput): 
 }
 
 export async function updateEvent(supabase: SupabaseClient, id: string, input: EventInput): Promise<EventRecord> {
-  if (await checkEventConflict(supabase, input, id)) throw new Error('Já existe outro evento nesse horário.');
   const { data, error } = await supabase.from('events').update({ ...payload(input), updated_at: new Date().toISOString() }).eq('id', id).select(eventSelect).single();
   if (error) throw error;
   return data as EventRecord;
