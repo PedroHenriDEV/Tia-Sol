@@ -27,23 +27,6 @@ export async function getEventById(supabase: SupabaseClient, id: string): Promis
   return (data ?? null) as EventRecord | null;
 }
 
-export async function checkEventConflict(
-  supabase: SupabaseClient,
-  input: Pick<EventInput, 'event_date' | 'start_time' | 'end_time'>,
-  excludeId?: string,
-): Promise<boolean> {
-  const companyId = await getCurrentCompanyId(supabase);
-  const { data, error } = await supabase.rpc('has_event_conflict', {
-    p_company_id: companyId,
-    p_event_date: input.event_date,
-    p_start_time: input.start_time,
-    p_end_time: input.end_time,
-    p_exclude_id: excludeId ?? null,
-  });
-  if (error) throw error;
-  return Boolean(data);
-}
-
 function payload(input: EventInput) {
   return {
     title: input.title,
@@ -62,7 +45,6 @@ function payload(input: EventInput) {
 
 export async function createEvent(supabase: SupabaseClient, input: EventInput): Promise<EventRecord> {
   const companyId = await getCurrentCompanyId(supabase);
-  if (await checkEventConflict(supabase, input)) throw new Error('Já existe outro evento nesse horário.');
   const { data, error } = await supabase.from('events').insert({ company_id: companyId, ...payload(input) }).select(eventSelect).single();
   if (error) throw error;
   return data as EventRecord;
